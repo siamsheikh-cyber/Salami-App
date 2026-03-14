@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import crescentDecoration from "@/assets/crescent-decoration.png";
 import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
-import { playPop, playCashRegister, playEntryFanfare } from "@/lib/sounds";
+import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds"; // playAww যোগ করা হয়েছে
 
 type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
 
@@ -40,17 +40,20 @@ const GamePage = () => {
     const timer = setTimeout(() => {
       setStage("q1");
     }, 3000);
-    // Play entry fanfare after a short delay
+
     const sfxTimer = setTimeout(() => {
       if (!muted) playEntryFanfare();
     }, 500);
     return () => { clearTimeout(timer); clearTimeout(sfxTimer); };
   }, [navigate, muted]);
 
-  const playSound = useCallback((type: "pop" | "cash") => {
+  // playSound ফাংশনে aww টাইপ যোগ করা হয়েছে
+  const playSound = useCallback((type: "pop" | "cash" | "oikire" | "aww") => {
     if (muted) return;
     if (type === "pop") playPop();
-    else playCashRegister();
+    else if (type === "cash") playCashRegister();
+    else if (type === "oikire") playOikire();
+    else if (type === "aww") playAww(); // Aww সাউন্ড প্লে হবে
   }, [muted]);
 
   const fireConfetti = useCallback(() => {
@@ -77,13 +80,14 @@ const GamePage = () => {
   }, []);
 
   const handleSalamiChoice = (choice: "income" | "fixed") => {
-    playSound("pop");
     if (choice === "fixed") {
+      playSound("aww"); // নিজে নির্ধারণ করলে 'Aww' বাজবে 😍
       setSalamiAmount(1000);
       setStage("result");
       setTimeout(fireConfetti, 300);
       playSound("cash");
     } else {
+      playSound("oikire"); // ইনকাম অপশনে 'ঐ কিরে' বাজবে 🤨
       setStage("income-input");
     }
   };
@@ -91,7 +95,7 @@ const GamePage = () => {
   const handleIncomeSubmit = () => {
     const income = parseInt(incomeInput);
     if (isNaN(income) || income <= 0) return;
-    setSalamiAmount(income >= 1000000 ? 2000 : 1000);
+    setSalamiAmount(income >= 1000000 ? 1000 : 500);
     setStage("result");
     setTimeout(fireConfetti, 300);
     playSound("cash");
@@ -119,6 +123,7 @@ const GamePage = () => {
     else navigate("/");
   };
 
+  // ... (বাকি UI কোড আগের মতোই থাকবে)
   if (stage === "loading") {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
@@ -150,7 +155,6 @@ const GamePage = () => {
         className="absolute top-0 left-0 w-20 opacity-20 animate-float pointer-events-none"
       />
 
-      {/* Top bar: Back + Mute */}
       <div className="w-full max-w-lg flex items-center justify-between mb-4">
         <button
           onClick={handleBack}
@@ -169,7 +173,6 @@ const GamePage = () => {
       </div>
 
       <div className="w-full max-w-lg">
-        {/* Greeting */}
         <div className="text-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold gold-text font-heading">
             আহলান ওয়া সাহলান, {addressee}! 🌙
@@ -177,7 +180,6 @@ const GamePage = () => {
           <p className="text-muted-foreground mt-1">🌙 ঈদ মোবারক 🌙</p>
         </div>
 
-        {/* Question 1 */}
         {stage === "q1" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
@@ -200,7 +202,6 @@ const GamePage = () => {
           </div>
         )}
 
-        {/* Question 2 */}
         {stage === "q2" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
@@ -223,7 +224,6 @@ const GamePage = () => {
           </div>
         )}
 
-        {/* Salami Decision */}
         {stage === "salami-choice" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
@@ -234,7 +234,7 @@ const GamePage = () => {
                 onClick={() => handleSalamiChoice("income")}
                 className="btn-festive w-full text-base py-4 font-heading"
               >
-                হ্যাঁ, ইনকামের ভিত্তিতে নির্ধারণ করুন 📊
+                হ্যাঁ, ইনকামের ভিত্তিতে নির্ধারণ করবো 📊
               </button>
               <button
                 onClick={() => handleSalamiChoice("fixed")}
@@ -246,7 +246,6 @@ const GamePage = () => {
           </div>
         )}
 
-        {/* Income Input */}
         {stage === "income-input" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
@@ -269,7 +268,6 @@ const GamePage = () => {
           </div>
         )}
 
-        {/* Result */}
         {stage === "result" && (
           <div className="space-y-5 animate-fade-in">
             <div className="card-festive p-6 text-center">
@@ -280,12 +278,11 @@ const GamePage = () => {
                 {addressee}, আপনার সালামি <span className="font-bold text-accent text-xl">{salamiAmount} টাকা</span> নির্ধারণ করা হয়েছে 😎
               </p>
               <p className="text-foreground leading-relaxed">
-                আপনার সালামি এখনো <span className="font-bold text-destructive">পেন্ডিং</span> আছে।
-                আপনার {role}র প্রতি ভালোবাসা প্রমাণ করতে নিচের নম্বরে দ্রুত সালামি পাঠিয়ে দিন!
+                আপনার সালামি এখনো <span className="font-bold text-destructive">পেন্ডিংয়ে</span> আছে।
+                আপনার প্রিয় {role}র পকেট একদম গড়ের মাঠ! পকেট ভর্তি করতে নিচের নম্বরে দ্রুত সালামি পাঠিয়ে দিন। 💸
               </p>
             </div>
 
-            {/* Payment Info */}
             <div className="card-festive p-6 text-center animate-pulse-glow">
               <p className="text-sm text-muted-foreground mb-1">বিকাশ (Personal)</p>
               <p className="text-2xl md:text-3xl font-bold emerald-text font-heading tracking-wider">
@@ -296,7 +293,6 @@ const GamePage = () => {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="space-y-3">
               {!confirmed ? (
                 <button onClick={handleConfirm} className="btn-festive w-full text-base py-4 font-heading">

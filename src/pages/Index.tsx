@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import eidBanner from "@/assets/eid-banner.png";
 import crescentDecoration from "@/assets/crescent-decoration.png";
+import { playSalam } from "@/lib/sounds";
 
 const relations = [
   { value: "ভাই", label: "বড় ভাই" },
@@ -20,40 +21,42 @@ const Index = () => {
   const [relation, setRelation] = useState("");
   const navigate = useNavigate();
 
+  // শুধুমাত্র এই পেজে প্রথমবার আসার সময় সাউন্ড প্লে হবে
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      playSalam();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const isValid = name.trim().length > 0 && relation.length > 0;
 
   const handleStart = () => {
     if (!isValid) return;
     localStorage.setItem("salami_name", name.trim());
     localStorage.setItem("salami_relation", relation);
+
+    // এখান থেকে playSalam() সরিয়ে দেওয়া হয়েছে, তাই বাটনে ক্লিক করলে আর বাজবে না।
     navigate("/game");
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center px-4 py-6 relative overflow-hidden">
-      {/* Floating decorations */}
       <img
         src={crescentDecoration}
         alt=""
-        className="absolute top-0 right-0 w-24 md:w-36 opacity-30 animate-float pointer-events-none"
-      />
-      <img
-        src={crescentDecoration}
-        alt=""
-        className="absolute bottom-10 left-0 w-20 md:w-28 opacity-20 animate-float pointer-events-none"
-        style={{ animationDelay: "1.5s" }}
+        className="absolute top-[80px] right-0 w-24 md:w-36 opacity-30 animate-float pointer-events-none"
       />
 
-      {/* Banner */}
-      <div className="w-full max-w-lg mb-6">
+      <div className="w-full max-w-lg mb-6 max-h-[150px] md:max-h-screen">
         <img
           src={eidBanner}
           alt="ঈদ মোবারক"
-          className="w-full rounded-2xl shadow-lg"
+          className="w-full rounded-2xl shadow-lg -mt-24"
         />
       </div>
 
-      {/* Card */}
       <div className="card-festive w-full max-w-lg p-6 md:p-8 animate-fade-in">
         <h1 className="text-2xl md:text-3xl font-bold emerald-text text-center font-heading leading-relaxed">
           আসসালামু আলাইকুম ওয়া রাহমাতুল্লাহ
@@ -64,7 +67,6 @@ const Index = () => {
         </p>
 
         <div className="mt-8 space-y-5">
-          {/* Name Input */}
           <div>
             <label className="block text-sm font-semibold text-foreground mb-2">
               আপনার নাম লিখুন
@@ -73,12 +75,11 @@ const Index = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="যেমন- নাঈম"
+              placeholder="নাম লিখুন"
               className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base"
             />
           </div>
 
-          {/* Relation Dropdown */}
           <div>
             <label className="block text-sm font-semibold text-foreground mb-2">
               আমাদের সম্পর্ক বেছে নিন
@@ -99,13 +100,12 @@ const Index = () => {
             </select>
           </div>
 
-          {/* Button */}
           <button
             onClick={handleStart}
             disabled={!isValid}
-            className="btn-festive w-full text-lg py-4 rounded-xl mt-4 font-heading"
+            className="btn-festive w-full text-lg py-4 rounded-xl mt-4 font-heading text-center"
           >
-            ঈদের সালামি খেলা শুরু করুন 🎉
+            সালামি মিশন শুরু হোক!💸
           </button>
         </div>
       </div>

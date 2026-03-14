@@ -86,7 +86,6 @@ export function playEntryFanfare() {
     osc.stop(t + 0.25);
   });
 
-  // Final shimmer
   const shimmer = ctx.createOscillator();
   const sg = ctx.createGain();
   shimmer.type = "sine";
@@ -98,4 +97,20 @@ export function playEntryFanfare() {
   shimmer.connect(sg).connect(ctx.destination);
   shimmer.start(st);
   shimmer.stop(st + 0.6);
+}
+
+
+export function playSalam() {
+  const audio = new Audio("/salam.mp3");
+  audio.play().catch(err => console.log("Audio play blocked by browser."));
+}
+
+export function playOikire() {
+  const audio = new Audio("/oikire.mp3");
+  audio.play().catch(err => console.log("Play blocked"));
+}
+
+export function playAww() {
+  const audio = new Audio("/Aww.mp3");
+  audio.play().catch(err => console.log("Aww sound blocked"));
 }
