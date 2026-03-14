@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 150 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 30% 12%;
+
+    --primary: 150 40% 22%;
+    --primary-foreground: 40 60% 95%;
+
+    --secondary: 40 60% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 40 20% 93%;
+    --muted-foreground: 150 10% 40%;
+
+    --accent: 40 70% 55%;
+    --accent-foreground: 150 40% 12%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 40 30% 85%;
+    --input: 40 30% 85%;
+    --ring: 40 60% 50%;
+
+    --radius: 0.75rem;
+
+    --gold: 40 70% 55%;
+    --gold-light: 40 60% 85%;
+    --emerald: 150 40% 22%;
+    --emerald-light: 150 30% 40%;
+
+    --font-heading: 'Hind Siliguri', sans-serif;
+    --font-body: 'Noto Sans Bengali', sans-serif;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer components {
+  .btn-festive {
+    @apply bg-accent text-accent-foreground font-bold py-3 px-8 rounded-xl shadow-lg transition-all duration-300;
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(40 80% 45%) 100%);
+    color: hsl(0 0% 100%);
+  }
+  .btn-festive:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px hsl(var(--gold) / 0.4);
+  }
+  .btn-festive:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .card-festive {
+    @apply bg-card rounded-2xl shadow-xl border;
+    border-color: hsl(var(--gold-light));
+  }
+  .gold-text {
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(40 80% 40%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .emerald-text {
+    color: hsl(var(--emerald));
+  }
+}
+
+@layer utilities {
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px hsl(var(--gold) / 0.3); }
+    50% { box-shadow: 0 0 20px hsl(var(--gold) / 0.6); }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-shimmer {
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+  .animate-spin-slow { animation: spin-slow 20s linear infinite; }
+}

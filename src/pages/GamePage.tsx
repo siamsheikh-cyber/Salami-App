@@ -1,0 +1,336 @@
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import confetti from "canvas-confetti";
+import crescentDecoration from "@/assets/crescent-decoration.png";
+import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
+import { playPop, playCashRegister, playEntryFanfare } from "@/lib/sounds";
+
+type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
+
+const relationToRole: Record<string, string> = {
+  "ভাই": "ছোট ভাই",
+  "আপু": "ছোট ভাই",
+  "মামা": "ভাগিনা",
+  "মামি": "ভাগিনা",
+  "কাকা": "ভাতিজা",
+  "কাকি": "ভাতিজা",
+  "ফুফু": "ভাতিজা",
+  "খালা": "ভাগিনা",
+  "বন্ধু": "বন্ধু",
+};
+
+const GamePage = () => {
+  const navigate = useNavigate();
+  const name = localStorage.getItem("salami_name") || "অতিথি";
+  const relation = localStorage.getItem("salami_relation") || "ভাই";
+  const addressee = `${name} ${relation}`;
+  const role = relationToRole[relation] || "ছোট ভাই";
+
+  const [stage, setStage] = useState<Stage>("loading");
+  const [confirmed, setConfirmed] = useState(false);
+  const [salamiAmount, setSalamiAmount] = useState(1000);
+  const [incomeInput, setIncomeInput] = useState("");
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("salami_name")) {
+      navigate("/");
+      return;
+    }
+    const timer = setTimeout(() => {
+      setStage("q1");
+    }, 3000);
+    // Play entry fanfare after a short delay
+    const sfxTimer = setTimeout(() => {
+      if (!muted) playEntryFanfare();
+    }, 500);
+    return () => { clearTimeout(timer); clearTimeout(sfxTimer); };
+  }, [navigate, muted]);
+
+  const playSound = useCallback((type: "pop" | "cash") => {
+    if (muted) return;
+    if (type === "pop") playPop();
+    else playCashRegister();
+  }, [muted]);
+
+  const fireConfetti = useCallback(() => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ["#d4a017", "#1a5c38", "#ffffff"],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ["#d4a017", "#1a5c38", "#ffffff"],
+      });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+  }, []);
+
+  const handleSalamiChoice = (choice: "income" | "fixed") => {
+    playSound("pop");
+    if (choice === "fixed") {
+      setSalamiAmount(1000);
+      setStage("result");
+      setTimeout(fireConfetti, 300);
+      playSound("cash");
+    } else {
+      setStage("income-input");
+    }
+  };
+
+  const handleIncomeSubmit = () => {
+    const income = parseInt(incomeInput);
+    if (isNaN(income) || income <= 0) return;
+    setSalamiAmount(income >= 1000000 ? 2000 : 1000);
+    setStage("result");
+    setTimeout(fireConfetti, 300);
+    playSound("cash");
+  };
+
+  const handleShare = () => {
+    const text = `🌙 ঈদ মোবারক! সিয়ামের সালামি সিস্টেমে আপনার সালামি পেন্ডিং আছে! 😄\n\n👉 ${window.location.origin}`;
+    if (navigator.share) {
+      navigator.share({ title: "সিয়ামের সালামি সিস্টেম", text });
+    } else {
+      navigator.clipboard.writeText(text);
+      alert("লিংক কপি হয়ে গেছে! 📋");
+    }
+  };
+
+  const handleConfirm = () => {
+    setConfirmed(true);
+    fireConfetti();
+  };
+
+  const handleBack = () => {
+    if (stage === "q2") setStage("q1");
+    else if (stage === "salami-choice") setStage("q2");
+    else if (stage === "income-input") setStage("salami-choice");
+    else navigate("/");
+  };
+
+  if (stage === "loading") {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+        <img src={crescentDecoration} alt="" className="w-20 animate-spin-slow mb-6 opacity-60" />
+        <h2 className="text-xl md:text-2xl font-bold emerald-text text-center font-heading">
+          সালামি ক্যালকুলেশন চলছে...
+        </h2>
+        <p className="text-muted-foreground mt-2 text-center">
+          অনুগ্রহ করে অপেক্ষা করুন 😎
+        </p>
+        <div className="mt-6 w-48 h-2 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full animate-shimmer"
+            style={{
+              background: "linear-gradient(90deg, hsl(var(--gold)), hsl(var(--emerald)), hsl(var(--gold)))",
+              backgroundSize: "200% auto",
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-6 relative overflow-hidden">
+      <img
+        src={crescentDecoration}
+        alt=""
+        className="absolute top-0 left-0 w-20 opacity-20 animate-float pointer-events-none"
+      />
+
+      {/* Top bar: Back + Mute */}
+      <div className="w-full max-w-lg flex items-center justify-between mb-4">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          পিছনে যান
+        </button>
+        <button
+          onClick={() => setMuted(!muted)}
+          className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground"
+          aria-label={muted ? "Unmute" : "Mute"}
+        >
+          {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+        </button>
+      </div>
+
+      <div className="w-full max-w-lg">
+        {/* Greeting */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold gold-text font-heading">
+            আহলান ওয়া সাহলান, {addressee}! 🌙
+          </h1>
+          <p className="text-muted-foreground mt-1">🌙 ঈদ মোবারক 🌙</p>
+        </div>
+
+        {/* Question 1 */}
+        {stage === "q1" && (
+          <div className="card-festive p-6 animate-fade-in">
+            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
+              {addressee}, আপনার প্রিয় {role} কে?
+            </h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => { playSound("pop"); setStage("q2"); }}
+                className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
+              >
+                ১. সিয়াম 😇
+              </button>
+              <button
+                onClick={() => { playSound("pop"); setStage("q2"); }}
+                className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
+              >
+                ২. ১ নম্বর অপশনটি। 😏
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Question 2 */}
+        {stage === "q2" && (
+          <div className="card-festive p-6 animate-fade-in">
+            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
+              এবার সত্যি করে বলুন তো, ঈদ উপলক্ষে বড়দের প্রধান দায়িত্ব কী?
+            </h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => { playSound("pop"); setStage("salami-choice"); }}
+                className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
+              >
+                ক. ছোটদের সালামি দেওয়া 💸
+              </button>
+              <button
+                onClick={() => { playSound("pop"); setStage("salami-choice"); }}
+                className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
+              >
+                খ. সিয়ামকে অনেক অনেক সালামি দেওয়া। 🤑
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Salami Decision */}
+        {stage === "salami-choice" && (
+          <div className="card-festive p-6 animate-fade-in">
+            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
+              আপনি কি আপনার বার্ষিক ইনকামের ভিত্তিতে সালামি নির্ধারণ করতে চান, নাকি নিজেই নির্ধারণ করবেন?
+            </h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleSalamiChoice("income")}
+                className="btn-festive w-full text-base py-4 font-heading"
+              >
+                হ্যাঁ, ইনকামের ভিত্তিতে নির্ধারণ করুন 📊
+              </button>
+              <button
+                onClick={() => handleSalamiChoice("fixed")}
+                className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium text-center"
+              >
+                না, আমি নিজেই নির্ধারণ করবো 🤷
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Income Input */}
+        {stage === "income-input" && (
+          <div className="card-festive p-6 animate-fade-in">
+            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
+              আপনার বার্ষিক ইনকাম কত? 💰
+            </h2>
+            <input
+              type="number"
+              value={incomeInput}
+              onChange={(e) => setIncomeInput(e.target.value)}
+              placeholder="যেমন- ৫০০০০০"
+              className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base mb-4"
+            />
+            <button
+              onClick={handleIncomeSubmit}
+              disabled={!incomeInput || parseInt(incomeInput) <= 0}
+              className="btn-festive w-full text-base py-4 font-heading"
+            >
+              সালামি ক্যালকুলেট করুন 🧮
+            </button>
+          </div>
+        )}
+
+        {/* Result */}
+        {stage === "result" && (
+          <div className="space-y-5 animate-fade-in">
+            <div className="card-festive p-6 text-center">
+              <h2 className="text-xl md:text-2xl font-bold gold-text font-heading mb-3">
+                🎉 অভিনন্দন! সালামি ক্যালকুলেশন সম্পন্ন হয়েছে!
+              </h2>
+              <p className="text-foreground leading-relaxed mb-3">
+                {addressee}, আপনার সালামি <span className="font-bold text-accent text-xl">{salamiAmount} টাকা</span> নির্ধারণ করা হয়েছে 😎
+              </p>
+              <p className="text-foreground leading-relaxed">
+                আপনার সালামি এখনো <span className="font-bold text-destructive">পেন্ডিং</span> আছে।
+                আপনার {role}র প্রতি ভালোবাসা প্রমাণ করতে নিচের নম্বরে দ্রুত সালামি পাঠিয়ে দিন!
+              </p>
+            </div>
+
+            {/* Payment Info */}
+            <div className="card-festive p-6 text-center animate-pulse-glow">
+              <p className="text-sm text-muted-foreground mb-1">বিকাশ (Personal)</p>
+              <p className="text-2xl md:text-3xl font-bold emerald-text font-heading tracking-wider">
+                01339539820
+              </p>
+              <div className="mt-4 inline-block bg-muted rounded-xl p-3">
+                <p className="text-xs text-muted-foreground">📱 বিকাশ অ্যাপে Send Money করুন</p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-3">
+              {!confirmed ? (
+                <button onClick={handleConfirm} className="btn-festive w-full text-base py-4 font-heading">
+                  আমি সালামি পাঠিয়েছি ✅
+                </button>
+              ) : (
+                <div className="card-festive p-6 text-center animate-fade-in">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald" />
+                  <p className="text-lg font-bold emerald-text font-heading">
+                    ধন্যবাদ {addressee} 😎
+                  </p>
+                  <p className="text-muted-foreground mt-1">
+                    আপনার সালামি সিস্টেমে রেকর্ড করা হয়েছে।
+                  </p>
+                </div>
+              )}
+
+              <button
+                onClick={handleShare}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-input bg-background text-foreground hover:bg-muted transition-all font-medium"
+              >
+                <Share2 className="w-4 h-4" />
+                অন্যদের সাথে শেয়ার করুন
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs text-muted-foreground mt-8 text-center">
+        © সিয়ামের সালামি সিস্টেম ২০২৬
+      </p>
+    </div>
+  );
+};
+
+export default GamePage;
