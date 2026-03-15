@@ -99,18 +99,18 @@ export function playEntryFanfare() {
   shimmer.stop(st + 0.6);
 }
 
-
+// এক্সটার্নাল ফাইল প্লে করার জন্য ফাংশনগুলো আপডেট করা হলো
 export function playSalam() {
   const audio = new Audio("/salam.mp3");
-  audio.play().catch(err => console.log("Audio play blocked by browser."));
+  return audio.play(); // Return promise to handle in components
 }
 
 export function playOikire() {
   const audio = new Audio("/oikire.mp3");
-  audio.play().catch(err => console.log("Play blocked"));
+  return audio.play();
 }
 
 export function playAww() {
   const audio = new Audio("/Aww.mp3");
-  audio.play().catch(err => console.log("Aww sound blocked"));
+  return audio.play();
 }

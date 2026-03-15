@@ -21,13 +21,30 @@ const Index = () => {
   const [relation, setRelation] = useState("");
   const navigate = useNavigate();
 
-  // শুধুমাত্র এই পেজে প্রথমবার আসার সময় সাউন্ড প্লে হবে
+  // ব্রাউজারের অটো-প্লে পলিসি হ্যান্ডেল করার জন্য লজিক
   useEffect(() => {
-    const timer = setTimeout(() => {
-      playSalam();
-    }, 500);
+    const handleInitialInteraction = () => {
+      playSalam()
+        .then(() => {
+          // একবার সাউন্ড প্লে হলে ইভেন্ট রিমুভ করে দেবো
+          window.removeEventListener("click", handleInitialInteraction);
+          window.removeEventListener("touchstart", handleInitialInteraction);
+        })
+        .catch((err) => console.log("Autoplay blocked, waiting for user click."));
+    };
 
-    return () => clearTimeout(timer);
+    // প্রথমবার লোড হওয়ার সময় একবার চেষ্টা করবে
+    const timer = setTimeout(handleInitialInteraction, 500);
+
+    // যদি অটোমেটিক না বাজে, তবে ইউজার প্রথম যে কোনো জায়গায় ক্লিক করলেই বাজবে
+    window.addEventListener("click", handleInitialInteraction);
+    window.addEventListener("touchstart", handleInitialInteraction);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("click", handleInitialInteraction);
+      window.removeEventListener("touchstart", handleInitialInteraction);
+    };
   }, []);
 
   const isValid = name.trim().length > 0 && relation.length > 0;
@@ -36,8 +53,6 @@ const Index = () => {
     if (!isValid) return;
     localStorage.setItem("salami_name", name.trim());
     localStorage.setItem("salami_relation", relation);
-
-    // এখান থেকে playSalam() সরিয়ে দেওয়া হয়েছে, তাই বাটনে ক্লিক করলে আর বাজবে না।
     navigate("/game");
   };
 
