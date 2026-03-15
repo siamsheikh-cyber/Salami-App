@@ -4,6 +4,7 @@ import confetti from "canvas-confetti";
 import crescentDecoration from "@/assets/crescent-decoration.png";
 import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
 import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds";
+
 type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
 
 const relationToRole: Record<string, string> = {
@@ -27,7 +28,7 @@ const GamePage = () => {
 
   const [stage, setStage] = useState<Stage>("loading");
   const [confirmed, setConfirmed] = useState(false);
-  const [salamiAmount, setSalamiAmount] = useState(1000);
+  const [salamiAmount, setSalamiAmount] = useState(500);
   const [incomeInput, setIncomeInput] = useState("");
   const [muted, setMuted] = useState(false);
 
@@ -81,7 +82,7 @@ const GamePage = () => {
   const handleSalamiChoice = (choice: "income" | "fixed") => {
     if (choice === "fixed") {
       playSound("aww");
-      setSalamiAmount(1000);
+      setSalamiAmount(500); // সরাসরি নির্ধারণ করলে ৫০০ টাকা
       setStage("result");
       setTimeout(fireConfetti, 300);
       playSound("cash");
@@ -94,7 +95,14 @@ const GamePage = () => {
   const handleIncomeSubmit = () => {
     const income = parseInt(incomeInput);
     if (isNaN(income) || income <= 0) return;
-    setSalamiAmount(income >= 1000000 ? 1000 : 500);
+
+    // ৮০,০০০ বা তার বেশি হলে ১০০০ টাকা, না হলে ৫০০ টাকা
+    if (income >= 79999) {
+      setSalamiAmount(1000);
+    } else {
+      setSalamiAmount(500);
+    }
+
     setStage("result");
     setTimeout(fireConfetti, 300);
     playSound("cash");
@@ -225,14 +233,14 @@ const GamePage = () => {
         {stage === "salami-choice" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              আপনি কি আপনার বার্ষিক ইনকামের ভিত্তিতে সালামি নির্ধারণ করতে চান, নাকি নিজেই নির্ধারণ করবেন?
+              আপনি কি আপনার মাসিক ইনকামের ভিত্তিতে সালামি নির্ধারণ করতে চান?
             </h2>
             <div className="space-y-3">
               <button
                 onClick={() => handleSalamiChoice("income")}
                 className="btn-festive w-full text-base py-4 font-heading"
               >
-                হ্যাঁ, ইনকামের ভিত্তিতে নির্ধারণ করবো 📊
+                হ্যাঁ, ইনকামের ভিত্তিতে 📊
               </button>
               <button
                 onClick={() => handleSalamiChoice("fixed")}
@@ -247,13 +255,13 @@ const GamePage = () => {
         {stage === "income-input" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              আপনার বার্ষিক ইনকাম কত? 💰
+              আপনার মাসিক ইনকাম কত? 💰
             </h2>
             <input
               type="number"
               value={incomeInput}
               onChange={(e) => setIncomeInput(e.target.value)}
-              placeholder="যেমন- ৫০০০০০"
+              placeholder="যেমন- ৮০০০০"
               className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base mb-4"
             />
             <button
@@ -270,14 +278,14 @@ const GamePage = () => {
           <div className="space-y-5 animate-fade-in">
             <div className="card-festive p-6 text-center">
               <h2 className="text-xl md:text-2xl font-bold gold-text font-heading mb-3">
-                🎉 অভিনন্দন! সালামি ক্যালকুলেশন সম্পন্ন হয়েছে!
+                🎉 অভিনন্দন! সালামি ক্যালকুলেশন সম্পন্ন!
               </h2>
               <p className="text-foreground leading-relaxed mb-3">
                 {addressee}, আপনার সালামি <span className="font-bold text-accent text-xl">{salamiAmount} টাকা</span> নির্ধারণ করা হয়েছে 😎
               </p>
               <p className="text-foreground leading-relaxed">
                 আপনার সালামি এখনো <span className="font-bold text-destructive">পেন্ডিংয়ে</span> আছে।
-                আপনার প্রিয় {role}র পকেট একদম গড়ের মাঠ! পকেট ভর্তি করতে নিচের নম্বরে দ্রুত সালামি পাঠিয়ে দিন। 💸
+                আপনার প্রিয় {role}র পকেট একদম গড়ের মাঠ! পকেট ভর্তি করতে নিচের নম্বরে দ্রুত সালামি পাঠিয়ে দিন। 💸
               </p>
             </div>
 
