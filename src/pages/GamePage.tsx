@@ -82,7 +82,7 @@ const GamePage = () => {
   const handleSalamiChoice = (choice: "income" | "fixed") => {
     if (choice === "fixed") {
       playSound("aww");
-      setSalamiAmount(500); // সরাসরি নির্ধারণ করলে ৫০০ টাকা
+      setSalamiAmount(500);
       setStage("result");
       setTimeout(fireConfetti, 300);
       playSound("cash");
@@ -96,7 +96,6 @@ const GamePage = () => {
     const income = parseInt(incomeInput);
     if (isNaN(income) || income <= 0) return;
 
-    // ৮০,০০০ বা তার বেশি হলে ১০০০ টাকা, না হলে ৫০০ টাকা
     if (income >= 79999) {
       setSalamiAmount(1000);
     } else {
@@ -109,9 +108,9 @@ const GamePage = () => {
   };
 
   const handleShare = () => {
-    const text = `🌙 ঈদ মোবারক! সিয়ামের সালামি সিস্টেমে আপনার সালামি পেন্ডিং আছে! 😄\n\n👉 ${window.location.origin}`;
+    const text = `🌙 ঈদ মোবারক! সালামি সিস্টেমে আপনার সালামি পেন্ডিং আছে! 😄\n\n👉 ${window.location.origin}`;
     if (navigator.share) {
-      navigator.share({ title: "সিয়ামের সালামি সিস্টেম", text });
+      navigator.share({ title: "সালামি সিস্টেম", text });
     } else {
       navigator.clipboard.writeText(text);
       alert("লিংক কপি হয়ে গেছে! 📋");

@@ -122,7 +122,7 @@ const Index = () => {
       </div>
 
       <p className="text-xs text-muted-foreground mt-6 text-center">
-        © সিয়ামের সালামি সিস্টেম ২০২৬
+        © সালামি সিস্টেম ২০২৬
       </p>
     </div>
   );
