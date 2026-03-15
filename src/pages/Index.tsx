@@ -21,22 +21,18 @@ const Index = () => {
   const [relation, setRelation] = useState("");
   const navigate = useNavigate();
 
-  // ব্রাউজারের অটো-প্লে পলিসি হ্যান্ডেল করার জন্য লজিক
   useEffect(() => {
     const handleInitialInteraction = () => {
       playSalam()
         .then(() => {
-          // একবার সাউন্ড প্লে হলে ইভেন্ট রিমুভ করে দেবো
           window.removeEventListener("click", handleInitialInteraction);
           window.removeEventListener("touchstart", handleInitialInteraction);
         })
         .catch((err) => console.log("Autoplay blocked, waiting for user click."));
     };
 
-    // প্রথমবার লোড হওয়ার সময় একবার চেষ্টা করবে
     const timer = setTimeout(handleInitialInteraction, 500);
 
-    // যদি অটোমেটিক না বাজে, তবে ইউজার প্রথম যে কোনো জায়গায় ক্লিক করলেই বাজবে
     window.addEventListener("click", handleInitialInteraction);
     window.addEventListener("touchstart", handleInitialInteraction);
 

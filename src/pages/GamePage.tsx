@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import crescentDecoration from "@/assets/crescent-decoration.png";
 import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
-import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds"; // playAww যোগ করা হয়েছে
-
+import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds";
 type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
 
 const relationToRole: Record<string, string> = {
@@ -47,13 +46,13 @@ const GamePage = () => {
     return () => { clearTimeout(timer); clearTimeout(sfxTimer); };
   }, [navigate, muted]);
 
-  // playSound ফাংশনে aww টাইপ যোগ করা হয়েছে
+
   const playSound = useCallback((type: "pop" | "cash" | "oikire" | "aww") => {
     if (muted) return;
     if (type === "pop") playPop();
     else if (type === "cash") playCashRegister();
     else if (type === "oikire") playOikire();
-    else if (type === "aww") playAww(); // Aww সাউন্ড প্লে হবে
+    else if (type === "aww") playAww();
   }, [muted]);
 
   const fireConfetti = useCallback(() => {
@@ -81,13 +80,13 @@ const GamePage = () => {
 
   const handleSalamiChoice = (choice: "income" | "fixed") => {
     if (choice === "fixed") {
-      playSound("aww"); // নিজে নির্ধারণ করলে 'Aww' বাজবে 😍
+      playSound("aww");
       setSalamiAmount(1000);
       setStage("result");
       setTimeout(fireConfetti, 300);
       playSound("cash");
     } else {
-      playSound("oikire"); // ইনকাম অপশনে 'ঐ কিরে' বাজবে 🤨
+      playSound("oikire");
       setStage("income-input");
     }
   };
@@ -123,7 +122,6 @@ const GamePage = () => {
     else navigate("/");
   };
 
-  // ... (বাকি UI কোড আগের মতোই থাকবে)
   if (stage === "loading") {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
