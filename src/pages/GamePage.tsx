@@ -223,7 +223,7 @@ const GamePage = () => {
                 onClick={() => { playSound("pop"); setStage("salami-choice"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
-                খ. সিয়ামকে অনেক অনেক সালামি দেওয়া। 🤑
+                খ.শুধু সিয়ামকে সালামি দেওয়া। 🤑
               </button>
             </div>
           </div>
@@ -328,7 +328,7 @@ const GamePage = () => {
       </div>
 
       <p className="text-xs text-muted-foreground mt-8 text-center">
-        © সিয়ামের সালামি সিস্টেম ২০২৬
+        © সালামি সিস্টেম ২০২৬
       </p>
     </div>
   );
