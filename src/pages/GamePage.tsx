@@ -6,7 +6,7 @@ import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
 import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds";
 import { saveInteraction } from "@/lib/adminService";
 
-type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
+type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "fixed-choice" | "fixed-input" | "result";
 
 const relationToRole: Record<string, string> = {
   "ভাই": "ছোট ভাই",
@@ -84,24 +84,32 @@ const GamePage = () => {
 
   const handleSalamiChoice = (choice: "income" | "fixed") => {
     if (choice === "fixed") {
-      playSound("aww");
-      setSalamiAmount(500);
-      setStage("result");
-      setTimeout(fireConfetti, 300);
-      playSound("cash");
-      saveInteraction({
-        visitorName: name,
-        relation: relation,
-        q1Option,
-        q2Option,
-        incomeOption: choice,
-        incomeAmount: null,
-        finalSalami: 500
-      });
+      playSound("oikire");
+      setStage("fixed-choice");
     } else {
       playSound("oikire");
       setStage("income-input");
     }
+  };
+
+  const handleFixedInputSubmit = () => {
+    const fixedAmount = parseInt(incomeInput);
+    if (isNaN(fixedAmount) || fixedAmount <= 0) return;
+
+    setSalamiAmount(fixedAmount);
+    setStage("result");
+    setTimeout(fireConfetti, 300);
+    playSound("cash");
+
+    saveInteraction({
+      visitorName: name,
+      relation: relation,
+      q1Option,
+      q2Option,
+      incomeOption: "fixed",
+      incomeAmount: fixedAmount,
+      finalSalami: fixedAmount
+    });
   };
 
   const handleIncomeSubmit = () => {
@@ -151,7 +159,8 @@ const GamePage = () => {
   const handleBack = () => {
     if (stage === "q2") setStage("q1");
     else if (stage === "salami-choice") setStage("q2");
-    else if (stage === "income-input") setStage("salami-choice");
+    else if (stage === "income-input" || stage === "fixed-choice") setStage("salami-choice");
+    else if (stage === "fixed-input") setStage("fixed-choice");
     else navigate("/");
   };
 
@@ -295,6 +304,42 @@ const GamePage = () => {
               className="btn-festive w-full text-base py-4 font-heading"
             >
               সালামি ক্যালকুলেট করুন 🧮
+            </button>
+          </div>
+        )}
+
+        {stage === "fixed-choice" && (
+          <div className="card-festive p-6 animate-fade-in text-center">
+            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
+              আপনি আপনার সালামি নিজেই নির্ধারণ করতে পারবেন! 😎
+            </h2>
+            <button
+              onClick={() => { setIncomeInput(""); playSound("pop"); setStage("fixed-input"); }}
+              className="btn-festive w-full text-base py-4 font-heading"
+            >
+              নিজে নিজে নির্ধারণ করে নিতে চাই ✍️
+            </button>
+          </div>
+        )}
+
+        {stage === "fixed-input" && (
+          <div className="card-festive p-6 animate-fade-in">
+            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
+              কত টাকা সালামি চান? 💰
+            </h2>
+            <input
+              type="number"
+              value={incomeInput}
+              onChange={(e) => setIncomeInput(e.target.value)}
+              placeholder="যেমন- ৫০০০"
+              className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base mb-4"
+            />
+            <button
+              onClick={handleFixedInputSubmit}
+              disabled={!incomeInput || parseInt(incomeInput) <= 0}
+              className="btn-festive w-full text-base py-4 font-heading"
+            >
+              সালামি পক্ক করে নিন ✅
             </button>
           </div>
         )}

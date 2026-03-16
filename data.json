@@ -64,5 +64,49 @@
     "incomeOption": "fixed",
     "incomeAmount": null,
     "finalSalami": 500
+  },
+  {
+    "id": "1773696393665",
+    "timestamp": "2026-03-16T21:26:33.665Z",
+    "visitorName": "yu",
+    "relation": "খালা",
+    "q1Option": "Option 1",
+    "q2Option": "Give salami only to Siam",
+    "incomeOption": "fixed",
+    "incomeAmount": null,
+    "finalSalami": 500
+  },
+  {
+    "id": "1773696439713",
+    "timestamp": "2026-03-16T21:27:19.713Z",
+    "visitorName": "k",
+    "relation": "কাকা",
+    "q1Option": "Option 1",
+    "q2Option": "Give salami only to Siam",
+    "incomeOption": "fixed",
+    "incomeAmount": null,
+    "finalSalami": 500
+  },
+  {
+    "id": "1773696502056",
+    "timestamp": "2026-03-16T21:28:22.056Z",
+    "visitorName": "ggg",
+    "relation": "বন্ধু",
+    "q1Option": "Option 1",
+    "q2Option": "Give respect to elders",
+    "incomeOption": "income",
+    "incomeAmount": 3465436,
+    "finalSalami": 1000
+  },
+  {
+    "id": "1773696546185",
+    "timestamp": "2026-03-16T21:29:06.185Z",
+    "visitorName": "ha",
+    "relation": "বন্ধু",
+    "q1Option": "Option 1",
+    "q2Option": "Give salami only to Siam",
+    "incomeOption": "fixed",
+    "incomeAmount": null,
+    "finalSalami": 500
   }
 ]

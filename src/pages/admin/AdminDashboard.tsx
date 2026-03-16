@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchInteractions, downloadCSV, SalamiInteraction } from "@/lib/adminService";
-import { LogOut, Download, RefreshCw } from "lucide-react";
+import { fetchInteractions, downloadCSV, SalamiInteraction, deleteInteraction, updateInteraction } from "@/lib/adminService";
+import { LogOut, Download, RefreshCw, Edit2, Trash2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
@@ -42,6 +42,42 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem("salami_admin_token");
     navigate("/admin");
+  };
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAmount, setEditAmount] = useState<string>("");
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this interaction?")) {
+      try {
+        const token = localStorage.getItem("salami_admin_token");
+        await deleteInteraction(id, token!);
+        setData(data.filter(item => (item._id || item.id) !== id));
+        toast({ title: "Deleted", description: "Interaction removed successfully." });
+      } catch (err: any) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      }
+    }
+  };
+
+  const startEdit = (id: string, currentAmount: number) => {
+    setEditingId(id);
+    setEditAmount(currentAmount.toString());
+  };
+
+  const handleEditSave = async (id: string) => {
+    const newAmount = parseInt(editAmount);
+    if (isNaN(newAmount)) return;
+
+    try {
+      const token = localStorage.getItem("salami_admin_token");
+      await updateInteraction(id, { finalSalami: newAmount }, token!);
+      setData(data.map(item => (item._id || item.id) === id ? { ...item, finalSalami: newAmount } : item));
+      setEditingId(null);
+      toast({ title: "Updated", description: "Salami amount updated successfully." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const totalVisitors = data.length;
@@ -103,7 +139,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="card-festive rounded-xl overflow-hidden border border-border">
+        {/* Desktop Table */}
+        <div className="hidden md:block card-festive rounded-xl overflow-hidden border border-border">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 text-muted-foreground font-medium border-b border-border">
@@ -114,25 +151,29 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4">Income Amount</th>
                   <th className="px-6 py-4">Final Salami</th>
                   <th className="px-6 py-4">Time</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                       Loading data...
                     </td>
                   </tr>
                 ) : data.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                       No interactions found.
                     </td>
                   </tr>
                 ) : (
-                  data.map((item, index) => (
+                  data.map((item, index) => {
+                    const id = item._id || item.id;
+                    const isEditing = editingId === id;
+                    return (
                     <tr 
-                      key={item.id || index} 
+                      key={id || index} 
                       className="border-b border-border/50 hover:bg-muted/20 transition-colors"
                     >
                       <td className="px-6 py-4 font-medium text-foreground whitespace-nowrap">
@@ -150,17 +191,126 @@ const AdminDashboard = () => {
                         {item.incomeAmount ? `${item.incomeAmount} ৳` : '-'}
                       </td>
                       <td className="px-6 py-4 font-bold gold-text whitespace-nowrap">
-                        {item.finalSalami} ৳
+                        {isEditing ? (
+                          <div className="flex items-center gap-1">
+                            <input 
+                              type="number" 
+                              className="w-20 px-2 py-1 text-sm rounded bg-background border border-input text-foreground" 
+                              value={editAmount} 
+                              onChange={(e) => setEditAmount(e.target.value)} 
+                            />
+                            <span>৳</span>
+                          </div>
+                        ) : (
+                          `${item.finalSalami} ৳`
+                        )}
                       </td>
                       <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
                         {item.timestamp ? new Date(item.timestamp).toLocaleString() : '-'}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {isEditing ? (
+                            <>
+                              <button onClick={() => handleEditSave(id!)} className="p-1.5 text-emerald hover:bg-emerald/10 rounded" title="Save">
+                                <Save className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setEditingId(null)} className="p-1.5 text-muted-foreground hover:bg-muted rounded" title="Cancel">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => startEdit(id!, item.finalSalami)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded" title="Edit">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDelete(id!)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded" title="Delete">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
                     </tr>
-                  ))
+                  )})
                 )}
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Mobile Cards View */}
+        <div className="md:hidden space-y-4">
+          {loading ? (
+             <div className="text-center py-8 text-muted-foreground">Loading data...</div>
+          ) : data.length === 0 ? (
+             <div className="text-center py-8 text-muted-foreground">No interactions found.</div>
+          ) : (
+            data.map((item, index) => {
+              const id = item._id || item.id;
+              const isEditing = editingId === id;
+              return (
+              <div key={id || index} className="card-festive p-4 rounded-xl border border-border">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-bold text-foreground text-base">{item.visitorName}</h3>
+                    <p className="text-xs text-muted-foreground">{item.relation}</p>
+                  </div>
+                  <div className="flex gap-1">
+                          {isEditing ? (
+                            <>
+                              <button onClick={() => handleEditSave(id!)} className="p-2 text-emerald hover:bg-emerald/10 rounded">
+                                <Save className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setEditingId(null)} className="p-2 text-muted-foreground hover:bg-muted rounded">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => startEdit(id!, item.finalSalami)} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDelete(id!)} className="p-2 text-destructive hover:bg-destructive/10 rounded">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                  <div>
+                    <p className="text-muted-foreground text-xs">Income Option</p>
+                    <p className="font-medium text-foreground">{item.incomeOption === 'income' ? 'Income Based' : 'Fixed'}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Income Amount</p>
+                    <p className="font-medium text-foreground">{item.incomeAmount ? `${item.incomeAmount} ৳` : '-'}</p>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center border-t border-border/50 pt-3">
+                  <div className="text-xs text-muted-foreground">
+                    {item.timestamp ? new Date(item.timestamp).toLocaleString() : '-'}
+                  </div>
+                  <div className="font-bold gold-text text-lg items-end text-right">
+                    {isEditing ? (
+                      <div className="flex items-center gap-1">
+                        <input 
+                          type="number" 
+                          className="w-16 px-2 py-1 text-sm rounded bg-background border border-input text-foreground text-right" 
+                          value={editAmount} 
+                          onChange={(e) => setEditAmount(e.target.value)} 
+                        />
+                        <span>৳</span>
+                      </div>
+                    ) : (
+                      `${item.finalSalami} ৳`
+                    )}
+                  </div>
+                </div>
+              </div>
+            )})
+          )}
         </div>
       </div>
     </div>

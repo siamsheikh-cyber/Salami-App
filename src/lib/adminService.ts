@@ -1,4 +1,5 @@
 export interface SalamiInteraction {
+  _id?: string;
   id?: string;
   visitorName: string;
   relation: string;
@@ -50,6 +51,27 @@ export const loginAdmin = async (username: string, password: string): Promise<{ 
   if (!response.ok) {
     throw new Error("Invalid credentials");
   }
+  return response.json();
+};
+
+export const deleteInteraction = async (id: string, token: string) => {
+  const response = await fetch(`${API_BASE}/admin/interactions/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) throw new Error("Failed to delete interaction");
+};
+
+export const updateInteraction = async (id: string, data: Partial<SalamiInteraction>, token: string) => {
+  const response = await fetch(`${API_BASE}/admin/interactions/${id}`, {
+    method: "PUT",
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` 
+    },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error("Failed to update interaction");
   return response.json();
 };
 

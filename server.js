@@ -97,6 +97,35 @@ app.get('/api/admin/interactions', async (req, res) => {
     }
 });
 
+// API to delete an interaction (protected)
+app.delete('/api/admin/interactions/:id', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader !== 'Bearer siam-admin-token-2026') return res.status(401).json({ error: 'Unauthorized' });
+
+        const result = await Interaction.findByIdAndDelete(req.params.id);
+        if (!result) return res.status(404).json({ error: 'Not found' });
+        res.status(200).json({ message: 'Deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete' });
+    }
+});
+
+// API to update an interaction (protected)
+app.put('/api/admin/interactions/:id', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader !== 'Bearer siam-admin-token-2026') return res.status(401).json({ error: 'Unauthorized' });
+
+        // Update finalSalami (or other fields)
+        const result = await Interaction.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!result) return res.status(404).json({ error: 'Not found' });
+        res.status(200).json({ message: 'Updated successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
