@@ -4,6 +4,7 @@ import confetti from "canvas-confetti";
 import crescentDecoration from "@/assets/crescent-decoration.png";
 import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
 import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds";
+import { saveInteraction } from "@/lib/adminService";
 
 type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
 
@@ -31,6 +32,8 @@ const GamePage = () => {
   const [salamiAmount, setSalamiAmount] = useState(500);
   const [incomeInput, setIncomeInput] = useState("");
   const [muted, setMuted] = useState(false);
+  const [q1Option, setQ1Option] = useState("");
+  const [q2Option, setQ2Option] = useState("");
 
   useEffect(() => {
     if (!localStorage.getItem("salami_name")) {
@@ -86,6 +89,15 @@ const GamePage = () => {
       setStage("result");
       setTimeout(fireConfetti, 300);
       playSound("cash");
+      saveInteraction({
+        visitorName: name,
+        relation: relation,
+        q1Option,
+        q2Option,
+        incomeOption: choice,
+        incomeAmount: null,
+        finalSalami: 500
+      });
     } else {
       playSound("oikire");
       setStage("income-input");
@@ -96,15 +108,29 @@ const GamePage = () => {
     const income = parseInt(incomeInput);
     if (isNaN(income) || income <= 0) return;
 
+    let computedSalami = 0;
+
     if (income >= 79999) {
       setSalamiAmount(1000);
+      computedSalami = 1000;
     } else {
       setSalamiAmount(500);
+      computedSalami = 500;
     }
 
     setStage("result");
     setTimeout(fireConfetti, 300);
     playSound("cash");
+
+    saveInteraction({
+      visitorName: name,
+      relation: relation,
+      q1Option,
+      q2Option,
+      incomeOption: "income",
+      incomeAmount: income,
+      finalSalami: computedSalami
+    });
   };
 
   const handleShare = () => {
@@ -188,17 +214,17 @@ const GamePage = () => {
         {stage === "q1" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              {addressee}, আপনার প্রিয় {role} কে?
+              {addressee}, সিয়াম আপনার কাছে কেমন {role}?
             </h2>
             <div className="space-y-3">
               <button
-                onClick={() => { playSound("pop"); setStage("q2"); }}
+                onClick={() => { setQ1Option("Siam"); playSound("pop"); setStage("q2"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
-                ১. সিয়াম 😇
+                ১. ভালো মানুষ 😇
               </button>
               <button
-                onClick={() => { playSound("pop"); setStage("q2"); }}
+                onClick={() => { setQ1Option("Option 1"); playSound("pop"); setStage("q2"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
                 ২. ১ নম্বর অপশনটি। 😏
@@ -214,13 +240,13 @@ const GamePage = () => {
             </h2>
             <div className="space-y-3">
               <button
-                onClick={() => { playSound("pop"); setStage("salami-choice"); }}
+                onClick={() => { setQ2Option("Give respect to elders"); playSound("pop"); setStage("salami-choice"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
                 ক. ছোটদের সালামি দেওয়া 💸
               </button>
               <button
-                onClick={() => { playSound("pop"); setStage("salami-choice"); }}
+                onClick={() => { setQ2Option("Give salami only to Siam"); playSound("pop"); setStage("salami-choice"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
                 খ.শুধু সিয়ামকে সালামি দেওয়া। 🤑
