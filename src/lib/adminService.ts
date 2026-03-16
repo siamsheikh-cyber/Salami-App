@@ -10,7 +10,11 @@ export interface SalamiInteraction {
   timestamp?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+// Automatically use localhost for development and the Vercel URL for production.
+// This prevents mobile devices from trying to connect to localhost and asking for Local Network permissions.
+const API_BASE = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3001/api' 
+  : 'https://salami-app.vercel.app/api';
 
 export const saveInteraction = async (data: SalamiInteraction) => {
   try {
