@@ -1,70 +1,63 @@
 import express from 'express';
-import fs from 'fs';
-import path from 'path';
 import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const DATA_FILE = path.join(__dirname, 'data.json');
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/salami_db";
 
 app.use(cors());
 app.use(express.json());
 
-// Initialize data file if it doesn't exist
-if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify([]));
-}
+// Connect to MongoDB
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('Connected to MongoDB successfully!'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
-const readData = () => {
-    try {
-        const data = fs.readFileSync(DATA_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading data:', error);
-        return [];
-    }
-};
+// Define Mongoose Schema for Interactions
+const interactionSchema = new mongoose.Schema({
+  visitorName: { type: String, required: true },
+  relation: { type: String, required: true },
+  q1Option: { type: String, required: true },
+  q2Option: { type: String, required: true },
+  incomeOption: { type: String, required: true },
+  incomeAmount: { type: Number, default: null },
+  finalSalami: { type: Number, required: true },
+  timestamp: { type: Date, default: Date.now }
+});
 
-const writeData = (data) => {
-    try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    } catch (error) {
-        console.error('Error writing data:', error);
-    }
-};
+const Interaction = mongoose.model('Interaction', interactionSchema);
 
 // API to save a new interaction
-app.post('/api/interactions', (req, res) => {
-    const interaction = req.body;
-    
-    if (!interaction) {
-        return res.status(400).json({ error: 'Interaction data is required' });
+app.post('/api/interactions', async (req, res) => {
+    try {
+        const interactionData = req.body;
+        
+        if (!interactionData) {
+            return res.status(400).json({ error: 'Interaction data is required' });
+        }
+
+        const newInteraction = new Interaction(interactionData);
+        await newInteraction.save();
+
+        res.status(201).json({ message: 'Interaction saved successfully', data: newInteraction });
+    } catch (error) {
+        console.error('Error saving interaction:', error);
+        res.status(500).json({ error: 'Failed to save interaction' });
     }
-
-    // Add a unique ID and ensure timestamp exists
-    const newInteraction = {
-        id: Date.now().toString(),
-        timestamp: new Date().toISOString(),
-        ...interaction
-    };
-
-    const data = readData();
-    data.push(newInteraction);
-    writeData(data);
-
-    res.status(201).json({ message: 'Interaction saved successfully', data: newInteraction });
 });
 
 // API for admin login
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     
+    // In a real app, use hashed passwords in the DB.
     if (username === 'siam' && password === 'salami2026') {
-        // Return a simple token for verification
         res.status(200).json({ token: 'siam-admin-token-2026' });
     } else {
         res.status(401).json({ error: 'Invalid credentials' });
@@ -72,19 +65,23 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // API to get all interactions (protected)
-app.get('/api/admin/interactions', (req, res) => {
-    const authHeader = req.headers.authorization;
-    
-    // Very simple authentication check for this project
-    if (authHeader !== 'Bearer siam-admin-token-2026') {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
+app.get('/api/admin/interactions', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (authHeader !== 'Bearer siam-admin-token-2026') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
 
-    const data = readData();
-    // Return data sorted by newest first
-    res.status(200).json(data.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+        // Fetch all interactions sorted by newest first
+        const data = await Interaction.find().sort({ timestamp: -1 });
+        res.status(200).json(data);
+    } catch (error) {
+        console.error('Error fetching interactions:', error);
+        res.status(500).json({ error: 'Failed to fetch interactions' });
+    }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
