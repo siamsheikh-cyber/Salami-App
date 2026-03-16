@@ -42,5 +42,27 @@
     "incomeOption": "income",
     "incomeAmount": 56666,
     "finalSalami": 500
+  },
+  {
+    "id": "1773695909688",
+    "timestamp": "2026-03-16T21:18:29.688Z",
+    "visitorName": "hi",
+    "relation": "মামা",
+    "q1Option": "Option 1",
+    "q2Option": "Give salami only to Siam",
+    "incomeOption": "fixed",
+    "incomeAmount": null,
+    "finalSalami": 500
+  },
+  {
+    "id": "1773695961697",
+    "timestamp": "2026-03-16T21:19:21.697Z",
+    "visitorName": "ji",
+    "relation": "ভাই",
+    "q1Option": "Option 1",
+    "q2Option": "Give salami only to Siam",
+    "incomeOption": "fixed",
+    "incomeAmount": null,
+    "finalSalami": 500
   }
 ]
