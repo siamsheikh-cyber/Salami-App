@@ -10,6 +10,7 @@ export interface SalamiInteraction {
   finalSalami: number;
   timestamp?: string;
   status?: "Progress" | "Cancel" | "Done";
+  isPublic?: boolean;
 }
 
 // Automatically use localhost for development and relative path for Vercel production.
@@ -40,6 +41,12 @@ export const fetchInteractions = async (token: string): Promise<SalamiInteractio
   if (!response.ok) {
     throw new Error("Failed to fetch interactions");
   }
+  return response.json();
+};
+
+export const fetchPublicInteractions = async () => {
+  const response = await fetch(`${API_BASE}/public/interactions`);
+  if (!response.ok) throw new Error("Failed to fetch public interactions");
   return response.json();
 };
 
@@ -86,6 +93,19 @@ export const updateInteractionStatus = async (id: string, status: string, token:
     body: JSON.stringify({ status })
   });
   if (!response.ok) throw new Error("Failed to update status");
+  return response.json();
+};
+
+export const updateInteractionVisibility = async (id: string, isPublic: boolean, token: string) => {
+  const response = await fetch(`${API_BASE}/admin/interactions/${id}/visibility`, {
+    method: "PATCH",
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` 
+    },
+    body: JSON.stringify({ isPublic })
+  });
+  if (!response.ok) throw new Error("Failed to update visibility");
   return response.json();
 };
 

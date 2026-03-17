@@ -31,7 +31,15 @@ const GamePage = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [salamiAmount, setSalamiAmount] = useState(500);
   const [incomeInput, setIncomeInput] = useState("");
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(() => {
+    return localStorage.getItem("salami_muted") === "true";
+  });
+
+  const toggleMute = () => {
+    const newMuted = !muted;
+    setMuted(newMuted);
+    localStorage.setItem("salami_muted", newMuted.toString());
+  };
   const [q1Option, setQ1Option] = useState("");
   const [q2Option, setQ2Option] = useState("");
   const [showFixedInput, setShowFixedInput] = useState(false);
@@ -204,7 +212,7 @@ const GamePage = () => {
           পিছনে যান
         </button>
         <button
-          onClick={() => setMuted(!muted)}
+          onClick={toggleMute}
           className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground"
           aria-label={muted ? "Unmute" : "Mute"}
         >
@@ -245,20 +253,20 @@ const GamePage = () => {
         {stage === "q2" && (
           <div className="card-festive p-6 animate-fade-in">
             <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              এবার সত্যি করে বলুন তো, ঈদ উপলক্ষে বড়দের প্রধান দায়িত্ব কী?
+              আপনি এখন কী করতে চাচ্ছেন?
             </h2>
             <div className="space-y-3">
               <button
                 onClick={() => { setQ2Option("Give respect to elders"); playSound("pop"); setStage("salami-choice"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
-                ক. ছোটদের সালামি দেওয়া 💸
+                ক. আমি এখন সিয়ামকে সালামি দিতে চাচ্ছি 💸
               </button>
               <button
                 onClick={() => { setQ2Option("Give salami only to Siam"); playSound("pop"); setStage("salami-choice"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
-                খ.শুধু সিয়ামকে সালামি দেওয়া। 🤑
+                খ.এক নম্বর অপশনে যার নাম আছে তাকে আমি সালামি দিতে চাচ্ছি। 🤑
               </button>
             </div>
           </div>

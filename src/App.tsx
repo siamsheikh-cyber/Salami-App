@@ -8,6 +8,7 @@ import GamePage from "./pages/GamePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AdminLogin from "./pages/admin/AdminLogin.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
+import PublicList from "./pages/PublicList.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/game" element={<GamePage />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/public-list" element={<PublicList />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

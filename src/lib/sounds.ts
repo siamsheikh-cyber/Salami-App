@@ -7,7 +7,10 @@ function getCtx(): AudioContext {
   return audioCtx;
 }
 
+const isMuted = () => typeof window !== 'undefined' && localStorage.getItem("salami_muted") === "true";
+
 export function playPop() {
+  if (isMuted()) return;
   const ctx = getCtx();
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -22,6 +25,7 @@ export function playPop() {
 }
 
 export function playCashRegister() {
+  if (isMuted()) return;
   const ctx = getCtx();
   const now = ctx.currentTime;
 
@@ -68,6 +72,7 @@ export function playCashRegister() {
 }
 
 export function playEntryFanfare() {
+  if (isMuted()) return;
   const ctx = getCtx();
   const now = ctx.currentTime;
 
@@ -101,16 +106,19 @@ export function playEntryFanfare() {
 
 // এক্সটার্নাল ফাইল প্লে করার জন্য ফাংশনগুলো আপডেট করা হলো
 export function playSalam() {
+  if (isMuted()) return Promise.resolve();
   const audio = new Audio("/salam.mp3");
   return audio.play(); // Return promise to handle in components
 }
 
 export function playOikire() {
+  if (isMuted()) return Promise.resolve();
   const audio = new Audio("/oikire.mp3");
   return audio.play();
 }
 
 export function playAww() {
+  if (isMuted()) return Promise.resolve();
   const audio = new Audio("/Aww.mp3");
   return audio.play();
 }

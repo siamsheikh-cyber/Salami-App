@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchInteractions, downloadCSV, SalamiInteraction, deleteInteraction, updateInteraction, updateInteractionStatus } from "@/lib/adminService";
-import { LogOut, Download, RefreshCw, Edit2, Trash2, Save, X } from "lucide-react";
+import { fetchInteractions, downloadCSV, SalamiInteraction, deleteInteraction, updateInteraction, updateInteractionStatus, updateInteractionVisibility } from "@/lib/adminService";
+import { LogOut, Download, RefreshCw, Edit2, Trash2, Save, X, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
@@ -86,6 +86,18 @@ const AdminDashboard = () => {
       await updateInteractionStatus(id, newStatus, token!);
       setData(data.map(item => (item._id || item.id) === id ? { ...item, status: newStatus as any } : item));
       toast({ title: "Status Updated", description: `Changed status to ${newStatus}` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleVisibilityChange = async (id: string, currentVisibility: boolean) => {
+    try {
+      const token = localStorage.getItem("salami_admin_token");
+      const newVisibility = !currentVisibility;
+      await updateInteractionVisibility(id, newVisibility, token!);
+      setData(data.map(item => (item._id || item.id) === id ? { ...item, isPublic: newVisibility } : item));
+      toast({ title: "Visibility Updated", description: newVisibility ? "Visible on Public List" : "Hidden from Public List" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -250,6 +262,9 @@ const AdminDashboard = () => {
                             </>
                           ) : (
                             <>
+                              <button onClick={() => handleVisibilityChange(id!, item.isPublic !== false)} className={`p-1.5 rounded ${item.isPublic !== false ? 'text-indigo-500 hover:bg-indigo-500/10' : 'text-muted-foreground hover:bg-muted'}`} title={item.isPublic !== false ? "Hide from Public List" : "Show in Public List"}>
+                                {item.isPublic !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                              </button>
                               <button onClick={() => startEdit(id!, item.finalSalami)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded" title="Edit">
                                 <Edit2 className="w-4 h-4" />
                               </button>
@@ -308,6 +323,9 @@ const AdminDashboard = () => {
                             </>
                           ) : (
                             <>
+                              <button onClick={() => handleVisibilityChange(id!, item.isPublic !== false)} className={`p-2 rounded ${item.isPublic !== false ? 'text-indigo-500 hover:bg-indigo-500/10' : 'text-muted-foreground hover:bg-muted'}`}>
+                                {item.isPublic !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                              </button>
                               <button onClick={() => startEdit(id!, item.finalSalami)} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded">
                                 <Edit2 className="w-4 h-4" />
                               </button>

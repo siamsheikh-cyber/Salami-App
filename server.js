@@ -44,7 +44,8 @@ const interactionSchema = new mongoose.Schema({
   incomeAmount: { type: Number, default: null },
   finalSalami: { type: Number, required: true },
   timestamp: { type: Date, default: Date.now },
-  status: { type: String, default: 'Progress', enum: ['Progress', 'Cancel', 'Done'] }
+  status: { type: String, default: 'Progress', enum: ['Progress', 'Cancel', 'Done'] },
+  isPublic: { type: Boolean, default: true }
 });
 
 const Interaction = mongoose.model('Interaction', interactionSchema);
@@ -143,6 +144,39 @@ app.patch('/api/admin/interactions/:id/status', async (req, res) => {
         res.status(200).json({ message: 'Status updated successfully', data: result });
     } catch (error) {
         res.status(500).json({ error: 'Failed to update status' });
+    }
+});
+
+// API to update interaction public visibility (protected)
+app.patch('/api/admin/interactions/:id/visibility', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader !== 'Bearer siam-admin-token-2026') return res.status(401).json({ error: 'Unauthorized' });
+
+        const { isPublic } = req.body;
+        if (typeof isPublic !== 'boolean') {
+            return res.status(400).json({ error: 'Invalid isPublic value' });
+        }
+
+        const result = await Interaction.findByIdAndUpdate(req.params.id, { isPublic }, { new: true });
+        if (!result) return res.status(404).json({ error: 'Not found' });
+        res.status(200).json({ message: 'Visibility updated successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update visibility' });
+    }
+});
+
+// GET public interactions
+app.get('/api/public/interactions', async (req, res) => {
+    try {
+        // Only fetch required fields: visitorName, status, timestamp
+        // And only those explicitly marked as public
+        const interactions = await Interaction.find({ isPublic: { $ne: false } })
+            .select('visitorName status timestamp')
+            .sort({ timestamp: -1 });
+        res.status(200).json(interactions);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch public interactions' });
     }
 });
 
