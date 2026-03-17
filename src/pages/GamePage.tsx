@@ -6,7 +6,7 @@ import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
 import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds";
 import { saveInteraction } from "@/lib/adminService";
 
-type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "fixed-choice" | "fixed-input" | "result";
+type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
 
 const relationToRole: Record<string, string> = {
   "ভাই": "ছোট ভাই",
@@ -34,6 +34,7 @@ const GamePage = () => {
   const [muted, setMuted] = useState(false);
   const [q1Option, setQ1Option] = useState("");
   const [q2Option, setQ2Option] = useState("");
+  const [showFixedInput, setShowFixedInput] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem("salami_name")) {
@@ -84,8 +85,8 @@ const GamePage = () => {
 
   const handleSalamiChoice = (choice: "income" | "fixed") => {
     if (choice === "fixed") {
-      playSound("oikire");
-      setStage("fixed-choice");
+      playSound("pop");
+      setShowFixedInput(true);
     } else {
       playSound("oikire");
       setStage("income-input");
@@ -159,8 +160,7 @@ const GamePage = () => {
   const handleBack = () => {
     if (stage === "q2") setStage("q1");
     else if (stage === "salami-choice") setStage("q2");
-    else if (stage === "income-input" || stage === "fixed-choice") setStage("salami-choice");
-    else if (stage === "fixed-input") setStage("fixed-choice");
+    else if (stage === "income-input") setStage("salami-choice");
     else navigate("/");
   };
 
@@ -266,22 +266,50 @@ const GamePage = () => {
 
         {stage === "salami-choice" && (
           <div className="card-festive p-6 animate-fade-in">
-            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              আপনি কি আপনার মাসিক ইনকামের ভিত্তিতে সালামি নির্ধারণ করতে চান?
-            </h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => handleSalamiChoice("income")}
-                className="btn-festive w-full text-base py-4 font-heading"
-              >
-                হ্যাঁ, ইনকামের ভিত্তিতে 📊
-              </button>
-              <button
-                onClick={() => handleSalamiChoice("fixed")}
-                className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium text-center"
-              >
-                না, আমি নিজেই নির্ধারণ করবো 🤷
-              </button>
+
+            <div className="space-y-4">
+              {!showFixedInput ? (
+                <>
+                  <button
+                    onClick={() => handleSalamiChoice("income")}
+                    className="btn-festive w-full text-base py-4 font-heading"
+                  >
+                    হ্যাঁ, ইনকামের ভিত্তিতে 📊
+                  </button>
+                  <button
+                    onClick={() => handleSalamiChoice("fixed")}
+                    className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium text-center"
+                  >
+                    না, টাকার পরিমাণ আমি নিজেই নির্ধারণ করতে চাই 🤷
+                  </button>
+                </>
+              ) : (
+                <div className="animate-fade-in space-y-4">
+                  <h3 className="text-base font-medium text-foreground">সালামি কত টাকা দিতে চাচ্ছেন? 💰</h3>
+                  <input
+                    type="number"
+                    value={incomeInput}
+                    onChange={(e) => setIncomeInput(e.target.value)}
+                    placeholder="যেমন- ৫০০০"
+                    className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setShowFixedInput(false); setIncomeInput(""); }}
+                      className="w-1/3 px-4 py-3 rounded-xl border border-input bg-background text-foreground hover:bg-muted transition-all font-medium text-sm"
+                    >
+                      বাতিল
+                    </button>
+                    <button
+                      onClick={handleFixedInputSubmit}
+                      disabled={!incomeInput || parseInt(incomeInput) <= 0}
+                      className="btn-festive w-2/3 text-base py-3 font-heading"
+                    >
+                      নিশ্চিত করুন ✅
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -308,41 +336,7 @@ const GamePage = () => {
           </div>
         )}
 
-        {stage === "fixed-choice" && (
-          <div className="card-festive p-6 animate-fade-in text-center">
-            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              আপনি আপনার সালামি নিজেই নির্ধারণ করতে পারবেন! 😎
-            </h2>
-            <button
-              onClick={() => { setIncomeInput(""); playSound("pop"); setStage("fixed-input"); }}
-              className="btn-festive w-full text-base py-4 font-heading"
-            >
-              নিজে নিজে নির্ধারণ করে নিতে চাই ✍️
-            </button>
-          </div>
-        )}
 
-        {stage === "fixed-input" && (
-          <div className="card-festive p-6 animate-fade-in">
-            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              কত টাকা সালামি চান? 💰
-            </h2>
-            <input
-              type="number"
-              value={incomeInput}
-              onChange={(e) => setIncomeInput(e.target.value)}
-              placeholder="যেমন- ৫০০০"
-              className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base mb-4"
-            />
-            <button
-              onClick={handleFixedInputSubmit}
-              disabled={!incomeInput || parseInt(incomeInput) <= 0}
-              className="btn-festive w-full text-base py-4 font-heading"
-            >
-              সালামি পক্ক করে নিন ✅
-            </button>
-          </div>
-        )}
 
         {stage === "result" && (
           <div className="space-y-5 animate-fade-in">
@@ -351,11 +345,12 @@ const GamePage = () => {
                 🎉 অভিনন্দন! সালামি ক্যালকুলেশন সম্পন্ন!
               </h2>
               <p className="text-foreground leading-relaxed mb-3">
-                {addressee}, আপনার সালামি <span className="font-bold text-accent text-xl">{salamiAmount} টাকা</span> নির্ধারণ করা হয়েছে 😎
+                {addressee}, আপনার জন্য সালামি <span className="font-bold text-accent text-xl">{salamiAmount} টাকা</span> নির্ধারিত হয়েছে 😎
               </p>
               <p className="text-foreground leading-relaxed">
                 আপনার সালামি এখনো <span className="font-bold text-destructive">পেন্ডিংয়ে</span> আছে।
-                আপনার প্রিয় {role}র পকেট একদম গড়ের মাঠ! পকেট ভর্তি করতে নিচের নম্বরে দ্রুত সালামি পাঠিয়ে দিন। 💸
+                আপনার {role}-এর পকেটটা কিন্তু এখনো খালি পড়ে আছে!
+                ঈদের আনন্দটা একটু বাড়িয়ে দিতে অতি দ্রুত নিচের নম্বরে সালামি পাঠিয়ে দিন। 💸
               </p>
             </div>
 

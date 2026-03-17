@@ -43,7 +43,8 @@ const interactionSchema = new mongoose.Schema({
   incomeOption: { type: String, required: true },
   incomeAmount: { type: Number, default: null },
   finalSalami: { type: Number, required: true },
-  timestamp: { type: Date, default: Date.now }
+  timestamp: { type: Date, default: Date.now },
+  status: { type: String, default: 'Progress', enum: ['Progress', 'Cancel', 'Done'] }
 });
 
 const Interaction = mongoose.model('Interaction', interactionSchema);
@@ -123,6 +124,25 @@ app.put('/api/admin/interactions/:id', async (req, res) => {
         res.status(200).json({ message: 'Updated successfully', data: result });
     } catch (error) {
         res.status(500).json({ error: 'Failed to update' });
+    }
+});
+
+// API to update interaction status (protected)
+app.patch('/api/admin/interactions/:id/status', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader !== 'Bearer siam-admin-token-2026') return res.status(401).json({ error: 'Unauthorized' });
+
+        const { status } = req.body;
+        if (!['Progress', 'Cancel', 'Done'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        const result = await Interaction.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        if (!result) return res.status(404).json({ error: 'Not found' });
+        res.status(200).json({ message: 'Status updated successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update status' });
     }
 });
 

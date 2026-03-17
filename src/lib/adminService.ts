@@ -9,6 +9,7 @@ export interface SalamiInteraction {
   incomeAmount: number | null;
   finalSalami: number;
   timestamp?: string;
+  status?: "Progress" | "Cancel" | "Done";
 }
 
 // Automatically use localhost for development and relative path for Vercel production.
@@ -75,6 +76,19 @@ export const updateInteraction = async (id: string, data: Partial<SalamiInteract
   return response.json();
 };
 
+export const updateInteractionStatus = async (id: string, status: string, token: string) => {
+  const response = await fetch(`${API_BASE}/admin/interactions/${id}/status`, {
+    method: "PATCH",
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` 
+    },
+    body: JSON.stringify({ status })
+  });
+  if (!response.ok) throw new Error("Failed to update status");
+  return response.json();
+};
+
 export const downloadCSV = (data: SalamiInteraction[]) => {
   const headers = [
     "Name",
@@ -84,6 +98,7 @@ export const downloadCSV = (data: SalamiInteraction[]) => {
     "Income Option",
     "Income Amount",
     "Final Salami",
+    "Status",
     "Time",
   ];
   
@@ -98,6 +113,7 @@ export const downloadCSV = (data: SalamiInteraction[]) => {
       `"${row.incomeOption}"`,
       row.incomeAmount ? row.incomeAmount.toString() : "N/A",
       row.finalSalami.toString(),
+      `"${row.status || 'Progress'}"`,
       `"${new Date(row.timestamp || "").toLocaleString()}"`
     ];
     csvRows.push(r.join(","));

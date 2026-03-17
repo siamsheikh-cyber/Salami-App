@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchInteractions, downloadCSV, SalamiInteraction, deleteInteraction, updateInteraction } from "@/lib/adminService";
+import { fetchInteractions, downloadCSV, SalamiInteraction, deleteInteraction, updateInteraction, updateInteractionStatus } from "@/lib/adminService";
 import { LogOut, Download, RefreshCw, Edit2, Trash2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -80,6 +80,23 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const token = localStorage.getItem("salami_admin_token");
+      await updateInteractionStatus(id, newStatus, token!);
+      setData(data.map(item => (item._id || item.id) === id ? { ...item, status: newStatus as any } : item));
+      toast({ title: "Status Updated", description: `Changed status to ${newStatus}` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const getStatusColor = (status?: string) => {
+    if (status === "Done") return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    if (status === "Cancel") return "bg-destructive/10 text-destructive border-destructive/20";
+    return "bg-blue-500/10 text-blue-500 border-blue-500/20"; // Progress
+  };
+
   const totalVisitors = data.length;
   const totalSalami = data.reduce((sum, item) => sum + (item.finalSalami || 0), 0);
 
@@ -150,6 +167,7 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4">Income Option</th>
                   <th className="px-6 py-4">Income Amount</th>
                   <th className="px-6 py-4">Final Salami</th>
+                  <th className="px-6 py-4 text-center">Status</th>
                   <th className="px-6 py-4">Time</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
@@ -205,6 +223,17 @@ const AdminDashboard = () => {
                           `${item.finalSalami} ৳`
                         )}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <select 
+                          value={item.status || "Progress"}
+                          onChange={(e) => handleStatusChange(id!, e.target.value)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold outline-none appearance-none cursor-pointer border text-center ${getStatusColor(item.status)}`}
+                        >
+                          <option value="Progress">Progress</option>
+                          <option value="Done">Done</option>
+                          <option value="Cancel">Cancel</option>
+                        </select>
+                      </td>
                       <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
                         {item.timestamp ? new Date(item.timestamp).toLocaleString() : '-'}
                       </td>
@@ -252,11 +281,22 @@ const AdminDashboard = () => {
               return (
               <div key={id || index} className="card-festive p-4 rounded-xl border border-border">
                 <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-bold text-foreground text-base">{item.visitorName}</h3>
+                  <div className="flex-1 pr-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-foreground text-base leading-tight">{item.visitorName}</h3>
+                      <select 
+                        value={item.status || "Progress"}
+                        onChange={(e) => handleStatusChange(id!, e.target.value)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold outline-none appearance-none cursor-pointer border uppercase tracking-wider text-center ${getStatusColor(item.status)}`}
+                      >
+                        <option value="Progress">PROGRESS</option>
+                        <option value="Done">DONE</option>
+                        <option value="Cancel">CANCEL</option>
+                      </select>
+                    </div>
                     <p className="text-xs text-muted-foreground">{item.relation}</p>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 shrink-0">
                           {isEditing ? (
                             <>
                               <button onClick={() => handleEditSave(id!)} className="p-2 text-emerald hover:bg-emerald/10 rounded">
