@@ -45,7 +45,8 @@ const interactionSchema = new mongoose.Schema({
   finalSalami: { type: Number, required: true },
   timestamp: { type: Date, default: Date.now },
   status: { type: String, default: 'Progress', enum: ['Progress', 'Cancel', 'Done'] },
-  isPublic: { type: Boolean, default: true }
+  isPublic: { type: Boolean, default: true },
+  userMessage: { type: String, default: null }
 });
 
 const Interaction = mongoose.model('Interaction', interactionSchema);

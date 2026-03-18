@@ -84,10 +84,17 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "bounce-in-down": {
+          "0%": { opacity: "0", transform: "translateY(-40px)" },
+          "50%": { opacity: "1", transform: "translateY(10px)" },
+          "70%": { transform: "translateY(-5px)" },
+          "100%": { transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "bounce-in-down": "bounce-in-down 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) both",
       },
     },
   },

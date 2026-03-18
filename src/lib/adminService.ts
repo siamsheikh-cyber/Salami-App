@@ -11,6 +11,7 @@ export interface SalamiInteraction {
   timestamp?: string;
   status?: "Progress" | "Cancel" | "Done";
   isPublic?: boolean;
+  userMessage?: string;
 }
 
 // Automatically use localhost for development and relative path for Vercel production.

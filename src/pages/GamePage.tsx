@@ -31,6 +31,8 @@ const GamePage = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [salamiAmount, setSalamiAmount] = useState(500);
   const [incomeInput, setIncomeInput] = useState("");
+  const [userMessage, setUserMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [muted, setMuted] = useState(() => {
     return localStorage.getItem("salami_muted") === "true";
   });
@@ -109,16 +111,6 @@ const GamePage = () => {
     setStage("result");
     setTimeout(fireConfetti, 300);
     playSound("cash");
-
-    saveInteraction({
-      visitorName: name,
-      relation: relation,
-      q1Option,
-      q2Option,
-      incomeOption: "fixed",
-      incomeAmount: fixedAmount,
-      finalSalami: fixedAmount
-    });
   };
 
   const handleIncomeSubmit = () => {
@@ -138,16 +130,6 @@ const GamePage = () => {
     setStage("result");
     setTimeout(fireConfetti, 300);
     playSound("cash");
-
-    saveInteraction({
-      visitorName: name,
-      relation: relation,
-      q1Option,
-      q2Option,
-      incomeOption: "income",
-      incomeAmount: income,
-      finalSalami: computedSalami
-    });
   };
 
   const handleShare = () => {
@@ -160,7 +142,22 @@ const GamePage = () => {
     }
   };
 
-  const handleConfirm = () => {
+  const handleMessageSubmit = async () => {
+    if (!userMessage.trim()) return;
+    setIsSubmitting(true);
+    
+    await saveInteraction({
+      visitorName: name,
+      relation: relation,
+      q1Option,
+      q2Option,
+      incomeOption: showFixedInput ? "fixed" : "income",
+      incomeAmount: parseInt(incomeInput) || null,
+      finalSalami: salamiAmount,
+      userMessage: userMessage.trim()
+    });
+
+    setIsSubmitting(false);
     setConfirmed(true);
     fireConfetti();
   };
@@ -211,13 +208,6 @@ const GamePage = () => {
           <ArrowLeft className="w-4 h-4" />
           পিছনে যান
         </button>
-        <button
-          onClick={toggleMute}
-          className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground"
-          aria-label={muted ? "Unmute" : "Mute"}
-        >
-          {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-        </button>
       </div>
 
       <div className="w-full max-w-lg">
@@ -238,7 +228,7 @@ const GamePage = () => {
                 onClick={() => { setQ1Option("Siam"); playSound("pop"); setStage("q2"); }}
                 className="w-full text-left px-5 py-4 rounded-xl border border-input bg-background hover:bg-muted transition-all text-foreground font-medium"
               >
-                ১. ভালো মানুষ 😇
+                ১. ভালো {role} 😇
               </button>
               <button
                 onClick={() => { setQ1Option("Option 1"); playSound("pop"); setStage("q2"); }}
@@ -375,17 +365,28 @@ const GamePage = () => {
 
             <div className="space-y-3">
               {!confirmed ? (
-                <button onClick={handleConfirm} className="btn-festive w-full text-base py-4 font-heading">
-                  আমি সালামি পাঠিয়েছি ✅
-                </button>
+                <div className="space-y-4 animate-fade-in">
+                  <textarea
+                    value={userMessage}
+                    onChange={(e) => setUserMessage(e.target.value)}
+                    placeholder="আপনার মেসেজ লিখুন..."
+                    className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base min-h-[100px] resize-none"
+                  ></textarea>
+                  <button 
+                    onClick={handleMessageSubmit} 
+                    disabled={!userMessage.trim() || isSubmitting}
+                    className="btn-festive w-full text-base py-4 font-heading"
+                  >
+                    {isSubmitting ? "জমা হচ্ছে..." : "মেসেজ জমা দিন ✉️"}
+                  </button>
+                </div>
               ) : (
-                <div className="card-festive p-6 text-center animate-fade-in">
-                  <CheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald" />
-                  <p className="text-lg font-bold emerald-text font-heading">
-                    ধন্যবাদ {addressee} 😎
-                  </p>
-                  <p className="text-muted-foreground mt-1">
-                    আপনার সালামি সিস্টেমে রেকর্ড করা হয়েছে।
+                <div className="card-festive p-6 text-center animate-bounce-in-down border-rose-200">
+                  <h3 className="text-2xl md:text-3xl font-bold text-rose-600 font-heading mb-2 shadow-sm drop-shadow-sm">
+                    {name}
+                  </h3>
+                  <p className="text-base md:text-lg font-medium text-rose-500">
+                    আপনার মেসেজটি সফলভাবে সিয়ামের কাছে পৌঁছেছে। ধন্যবাদ!
                   </p>
                 </div>
               )}
