@@ -145,7 +145,7 @@ const GamePage = () => {
   const handleMessageSubmit = async () => {
     if (!userMessage.trim()) return;
     setIsSubmitting(true);
-    
+
     await saveInteraction({
       visitorName: name,
       relation: relation,
@@ -372,8 +372,8 @@ const GamePage = () => {
                     placeholder="আপনার মেসেজ লিখুন..."
                     className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base min-h-[100px] resize-none"
                   ></textarea>
-                  <button 
-                    onClick={handleMessageSubmit} 
+                  <button
+                    onClick={handleMessageSubmit}
                     disabled={!userMessage.trim() || isSubmitting}
                     className="btn-festive w-full text-base py-4 font-heading"
                   >
@@ -385,7 +385,7 @@ const GamePage = () => {
                   <h3 className="text-2xl md:text-3xl font-bold text-rose-600 font-heading mb-2 shadow-sm drop-shadow-sm">
                     {name}
                   </h3>
-                  <p className="text-base md:text-lg font-medium text-rose-500">
+                  <p className="text-base md:text-lg font-medium text-green">
                     আপনার মেসেজটি সফলভাবে সিয়ামের কাছে পৌঁছেছে। ধন্যবাদ!
                   </p>
                 </div>
