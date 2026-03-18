@@ -28,9 +28,7 @@ const PublicList = () => {
 
   const getFilteredData = () => {
     const statusFilter = activeTab === "done" ? "Done" : "Progress";
-    return data
-      .filter((item) => item.status === statusFilter)
-      .slice(0, 3); // Top 3 people
+    return data.filter((item) => item.status === statusFilter);
   };
 
   const filteredData = getFilteredData();
@@ -62,36 +60,34 @@ const PublicList = () => {
             সালামির লিস্ট
           </h1>
           <p className="text-muted-foreground text-sm">
-            সেরা ৩ জনের তালিকা (টাকার পরিমাণ গোপন রাখা হয়েছে)
+            যারা দিয়েছে এবং ফর্ম পূরণ করার মাধ্যমে যাদের টাকার পরিমাণ নির্ধারিত হয়েছে,তাদের তালিকা। (টাকার পরিমাণ গোপন রাখা হয়েছে)
           </p>
         </div>
 
         <div className="flex p-1 bg-muted/50 rounded-2xl mb-8 border border-border">
           <button
             onClick={() => setActiveTab("done")}
-            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${
-              activeTab === "done"
-                ? "bg-emerald text-white shadow-md"
-                : "text-muted-foreground hover:bg-background/50"
-            }`}
+            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${activeTab === "done"
+              ? "bg-emerald text-white shadow-md"
+              : "text-muted-foreground hover:bg-background/50"
+              }`}
           >
             <ShieldCheck className="w-4 h-4" />
-            সালামি দেওয়া শেষ
+            যাদের সালামি পেয়েছি
           </button>
           <button
             onClick={() => setActiveTab("pending")}
-            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${
-              activeTab === "pending"
-                ? "bg-gold text-gold-foreground shadow-md"
-                : "text-muted-foreground hover:bg-background/50"
-            }`}
+            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${activeTab === "pending"
+              ? "bg-gold text-gold-foreground shadow-md"
+              : "text-muted-foreground hover:bg-background/50"
+              }`}
           >
             <Clock className="w-4 h-4" />
-            সালামি বাকি আছে
+            যাদের বাকি আছে
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
           {loading ? (
             <div className="text-center py-12 text-muted-foreground animate-pulse">
               লিস্ট আপডেট হচ্ছে...
@@ -102,16 +98,16 @@ const PublicList = () => {
             </div>
           ) : (
             filteredData.map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="card-festive p-5 flex items-center justify-between border border-border/50 group hover:border-emerald/30 transition-all hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg font-heading shadow-inner ${
-                    index === 0 ? "bg-amber-100 text-amber-600 border border-amber-200" :
+                  <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center font-bold text-lg font-heading shadow-inner ${index === 0 ? "bg-amber-100 text-amber-600 border border-amber-200" :
                     index === 1 ? "bg-slate-100 text-slate-500 border border-slate-200" :
-                    "bg-orange-50 text-orange-600 border border-orange-100"
-                  }`}>
+                      index === 2 ? "bg-orange-50 text-orange-600 border border-orange-100" :
+                        "bg-rose-50 text-rose-600 border border-rose-200"
+                    }`}>
                     #{index + 1}
                   </div>
                   <div>

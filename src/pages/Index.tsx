@@ -68,13 +68,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center px-4 py-6 relative overflow-hidden">
       <div className="w-full max-w-lg flex justify-end mb-2 relative z-20">
-        <button
-          onClick={toggleMute}
-          className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground bg-background/50 backdrop-blur-sm"
-          aria-label={muted ? "Unmute" : "Mute"}
-        >
-          {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-        </button>
+
       </div>
 
       <img
@@ -144,7 +138,7 @@ const Index = () => {
 
           <button
             onClick={() => navigate("/public-list")}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl border-2 border-emerald/20 text-emerald hover:bg-emerald/5 transition-all font-heading text-base font-bold"
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl border-2 border-emerald/20 text-emerald bg-[green] hover:bg-emerald/5 text-white transition-all font-heading text-base font-bold"
           >
             <ListOrdered className="w-5 h-5" />
             সালামির লিস্ট দেখুন
