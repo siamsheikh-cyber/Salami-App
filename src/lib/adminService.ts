@@ -16,8 +16,8 @@ export interface SalamiInteraction {
 
 // Automatically use localhost for development and relative path for Vercel production.
 // This prevents CORS issues and the unexpected HTML token error.
-const API_BASE = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3001/api' 
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3001/api'
   : '/api';
 
 export const saveInteraction = async (data: SalamiInteraction) => {
@@ -52,9 +52,9 @@ export const addMessage = async (id: string, text: string) => {
 export const editMessage = async (id: string, messageId: string, text: string, token: string) => {
   const response = await fetch(`${API_BASE}/admin/interactions/${id}/message/${messageId}`, {
     method: "PUT",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}` 
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify({ text }),
   });
@@ -110,9 +110,9 @@ export const deleteInteraction = async (id: string, token: string) => {
 export const updateInteraction = async (id: string, data: Partial<SalamiInteraction>, token: string) => {
   const response = await fetch(`${API_BASE}/admin/interactions/${id}`, {
     method: "PUT",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}` 
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(data)
   });
@@ -123,9 +123,9 @@ export const updateInteraction = async (id: string, data: Partial<SalamiInteract
 export const updateInteractionStatus = async (id: string, status: string, token: string) => {
   const response = await fetch(`${API_BASE}/admin/interactions/${id}/status`, {
     method: "PATCH",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}` 
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify({ status })
   });
@@ -136,9 +136,9 @@ export const updateInteractionStatus = async (id: string, status: string, token:
 export const updateInteractionVisibility = async (id: string, isPublic: boolean, token: string) => {
   const response = await fetch(`${API_BASE}/admin/interactions/${id}/visibility`, {
     method: "PATCH",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}` 
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify({ isPublic })
   });
@@ -158,9 +158,9 @@ export const downloadCSV = (data: SalamiInteraction[]) => {
     "Status",
     "Time",
   ];
-  
+
   const csvRows = [headers.join(",")];
-  
+
   data.forEach(row => {
     const r = [
       `"${row.visitorName}"`,

@@ -69,22 +69,20 @@ const PublicList = () => {
         <div className="flex p-1 bg-muted/50 rounded-2xl mb-8 border border-border">
           <button
             onClick={() => setActiveTab("done")}
-            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${
-              activeTab === "done"
+            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${activeTab === "done"
                 ? "bg-emerald text-white shadow-md"
                 : "text-muted-foreground hover:bg-background/50"
-            }`}
+              }`}
           >
             <ShieldCheck className="w-4 h-4" />
             সালামি দেওয়া শেষ
           </button>
           <button
             onClick={() => setActiveTab("pending")}
-            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${
-              activeTab === "pending"
+            className={`flex-1 py-3 text-sm font-bold font-heading rounded-xl transition-all flex items-center justify-center gap-2 ${activeTab === "pending"
                 ? "bg-gold text-gold-foreground shadow-md"
                 : "text-muted-foreground hover:bg-background/50"
-            }`}
+              }`}
           >
             <Clock className="w-4 h-4" />
             সালামি বাকি আছে
@@ -102,16 +100,15 @@ const PublicList = () => {
             </div>
           ) : (
             filteredData.map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="card-festive p-5 flex items-center justify-between border border-border/50 group hover:border-emerald/30 transition-all hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg font-heading shadow-inner ${
-                    index === 0 ? "bg-amber-100 text-amber-600 border border-amber-200" :
-                    index === 1 ? "bg-slate-100 text-slate-500 border border-slate-200" :
-                    "bg-orange-50 text-orange-600 border border-orange-100"
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg font-heading shadow-inner ${index === 0 ? "bg-amber-100 text-amber-600 border border-amber-200" :
+                      index === 1 ? "bg-slate-100 text-slate-500 border border-slate-200" :
+                        "bg-orange-50 text-orange-600 border border-orange-100"
+                    }`}>
                     #{index + 1}
                   </div>
                   <div>
