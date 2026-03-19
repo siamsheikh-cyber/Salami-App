@@ -29,14 +29,13 @@ const PublicList = () => {
   const getFilteredData = () => {
     const statusFilter = activeTab === "done" ? "Done" : "Progress";
     return data
-      .filter((item) => item.status === statusFilter)
-      .slice(0, 3); // Top 3 people
+      .filter((item) => item.status === statusFilter);
   };
 
   const filteredData = getFilteredData();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-8 relative scroll-smooth">
       <img
         src={crescentDecoration}
         alt=""
@@ -62,7 +61,7 @@ const PublicList = () => {
             সালামির লিস্ট
           </h1>
           <p className="text-muted-foreground text-sm">
-            সেরা ৩ জনের তালিকা (টাকার পরিমাণ গোপন রাখা হয়েছে)
+            সালামি প্রদানকারীদের তালিকা (টাকার পরিমাণ গোপন রাখা হয়েছে)
           </p>
         </div>
 
@@ -105,10 +104,7 @@ const PublicList = () => {
                 className="card-festive p-5 flex items-center justify-between border border-border/50 group hover:border-emerald/30 transition-all hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg font-heading shadow-inner ${index === 0 ? "bg-amber-100 text-amber-600 border border-amber-200" :
-                      index === 1 ? "bg-slate-100 text-slate-500 border border-slate-200" :
-                        "bg-orange-50 text-orange-600 border border-orange-100"
-                    }`}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg font-heading shadow-inner bg-muted/50 text-muted-foreground border border-border/50">
                     #{index + 1}
                   </div>
                   <div>
