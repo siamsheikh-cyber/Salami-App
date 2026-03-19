@@ -96,6 +96,10 @@ const Index = () => {
           আসসালামু আলাইকুম ওয়া রাহমাতুল্লাহ
         </h1>
 
+        <p className="text-sm text-center text-muted-foreground font-medium mb-4 italic">
+          "সালামি দেয়া নিয়ে আর নেই কোনো ঝামেলা, স্বল্প সময়ে সালামি দিয়ে অ্যাপের লিস্টে অ্যাড করে নিন নিজেকে।"
+        </p>
+
         <p className="text-center text-muted-foreground mt-3 text-sm md:text-base leading-relaxed">
           <span className="block">আমি সিয়াম শেখ!</span>  দয়া করে নিচে আপনার নাম লিখুন এবং আমার সাথে আপনার সম্পর্কের ধরন নির্বাচন করুন।
         </p>

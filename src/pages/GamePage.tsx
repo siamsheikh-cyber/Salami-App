@@ -395,7 +395,7 @@ const GamePage = () => {
               <p className="text-foreground leading-relaxed">
                 আপনার সালামি এখনো <span className="font-bold text-destructive">পেন্ডিংয়ে</span> আছে।
                 আপনার {role}-এর পকেটটা কিন্তু এখনো খালি পড়ে আছে!
-                ঈদের আনন্দটা একটু বাড়িয়ে দিতে অতি দ্রুত নিচের নম্বরে সালামি পাঠিয়ে দিন। 💸
+                ঈদের আনন্দে শামিল হতে অতি দ্রুত নিচের নম্বরে সালামি পাঠিয়ে দিন। 💸
               </p>
             </div>
 
