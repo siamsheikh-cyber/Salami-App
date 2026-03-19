@@ -101,7 +101,7 @@ const Index = () => {
         </p>
 
         <p className="text-center text-muted-foreground mt-3 text-sm md:text-base leading-relaxed">
-          <span className="block">আমি সিয়াম শেখ!</span>  দয়া করে নিচে আপনার নাম লিখুন এবং আমার সাথে আপনার সম্পর্কের ধরন নির্বাচন করুন।
+          <span className="block">আমি সিয়াম শেখ!</span> নিচে আপনার নাম লিখুন এবং আমার সাথে আপনার সম্পর্কের ধরন নির্বাচন করুন।
         </p>
 
         <div className="mt-8 space-y-5">
