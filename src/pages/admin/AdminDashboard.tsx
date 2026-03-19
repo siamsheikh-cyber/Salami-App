@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchInteractions, downloadCSV, SalamiInteraction, deleteInteraction, updateInteraction, updateInteractionStatus, updateInteractionVisibility, editMessage, deleteMessage } from "@/lib/adminService";
-import { LogOut, Download, RefreshCw, Edit2, Trash2, Save, X, Eye, EyeOff, MessageSquare } from "lucide-react";
+import { LogOut, Download, RefreshCw, Edit2, Trash2, Save, X, Eye, EyeOff, MessageSquare, Mail, Inbox } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
@@ -49,6 +49,9 @@ const AdminDashboard = () => {
 
   const [editingMsgId, setEditingMsgId] = useState<{ interactionId: string, messageId: string } | null>(null);
   const [editMsgText, setEditMsgText] = useState<string>("");
+
+  const [selectedInteraction, setSelectedInteraction] = useState<SalamiInteraction | null>(null);
+  const [isGlobalInboxOpen, setIsGlobalInboxOpen] = useState(false);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this interaction?")) {
@@ -111,7 +114,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("salami_admin_token");
       await editMessage(interactionId, messageId, editMsgText, token!);
-      setData(data.map(item => {
+      const newData = data.map(item => {
         const id = item._id || item.id;
         if (id === interactionId && item.messages) {
           return {
@@ -120,7 +123,11 @@ const AdminDashboard = () => {
           };
         }
         return item;
-      }));
+      });
+      setData(newData);
+      if (selectedInteraction && (selectedInteraction._id || selectedInteraction.id) === interactionId) {
+        setSelectedInteraction(newData.find(item => (item._id || item.id) === interactionId) || null);
+      }
       setEditingMsgId(null);
       toast({ title: "Message Updated" });
     } catch (err: any) {
@@ -133,7 +140,7 @@ const AdminDashboard = () => {
       try {
         const token = localStorage.getItem("salami_admin_token");
         await deleteMessage(interactionId, messageId, token!);
-        setData(data.map(item => {
+        const newData = data.map(item => {
           const id = item._id || item.id;
           if (id === interactionId && item.messages) {
             return {
@@ -142,7 +149,11 @@ const AdminDashboard = () => {
             };
           }
           return item;
-        }));
+        });
+        setData(newData);
+        if (selectedInteraction && (selectedInteraction._id || selectedInteraction.id) === interactionId) {
+          setSelectedInteraction(newData.find(item => (item._id || item.id) === interactionId) || null);
+        }
         toast({ title: "Message Deleted" });
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -183,6 +194,18 @@ const AdminDashboard = () => {
             >
               <Download className="w-4 h-4" />
               Download CSV
+            </button>
+            <button
+              onClick={() => setIsGlobalInboxOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors text-sm font-medium shadow-sm"
+            >
+              <Inbox className="w-4 h-4" />
+              Inbox
+              {data.filter(i => i.messages && i.messages.length > 0).length > 0 && (
+                <span className="bg-white text-rose-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  {data.reduce((acc, curr) => acc + (curr.messages?.length || 0), 0)}
+                </span>
+              )}
             </button>
             <button
               onClick={handleLogout}
@@ -282,48 +305,22 @@ const AdminDashboard = () => {
                             `${item.finalSalami} ৳`
                           )}
                         </td>
-                        <td className="px-6 py-4 max-w-[200px]">
-                          <div className="max-h-24 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                            {item.messages && item.messages.length > 0 ? (
-                              item.messages.map((msg) => (
-                                <div key={msg._id} className="group relative bg-muted/40 p-2 rounded text-xs border border-border/50">
-                                  {editingMsgId?.messageId === msg._id ? (
-                                    <div className="flex flex-col gap-1">
-                                      <textarea
-                                        className="w-full p-1 bg-background border rounded text-[10px]"
-                                        value={editMsgText}
-                                        onChange={(e) => setEditMsgText(e.target.value)}
-                                      />
-                                      <div className="flex gap-1 justify-end">
-                                        <button onClick={() => handleEditMessage(id!, msg._id)} className="text-emerald hover:underline">Save</button>
-                                        <button onClick={() => setEditingMsgId(null)} className="text-muted-foreground hover:underline">Cancel</button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <p className="pr-8 break-words leading-tight">{msg.text}</p>
-                                      <div className="absolute top-1 right-1 hidden group-hover:flex gap-1">
-                                        <button
-                                          onClick={() => { setEditingMsgId({ interactionId: id!, messageId: msg._id }); setEditMsgText(msg.text); }}
-                                          className="p-1 text-blue-500 hover:bg-blue-500/10 rounded"
-                                        >
-                                          <Edit2 className="w-3 h-3" />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteMessage(id!, msg._id)}
-                                          className="p-1 text-destructive hover:bg-destructive/10 rounded"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </button>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              ))
-                            ) : (
-                              <span className="text-muted-foreground italic text-[10px]">No messages</span>
-                            )}
-                          </div>
+                        <td className="px-6 py-4">
+                          {item.messages && item.messages.length > 0 ? (
+                            <button 
+                              onClick={() => setSelectedInteraction(item)}
+                              className="relative p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors flex items-center gap-2 group border border-rose-100"
+                            >
+                              <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                              <span className="font-bold text-xs">{item.messages.length}</span>
+                              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                              </span>
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground/40 italic text-xs">No messages</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <select
@@ -429,48 +426,13 @@ const AdminDashboard = () => {
                   </div>
 
                   {item.messages && item.messages.length > 0 && (
-                    <div className="mb-3 px-3 py-2 bg-muted/30 rounded-lg border border-border/50">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1">
-                        <MessageSquare className="w-3 h-3" /> Messages
-                      </p>
-                      <div className="max-h-32 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                        {item.messages.map((msg) => (
-                          <div key={msg._id} className="bg-background/60 p-2 rounded border border-border/30">
-                            {editingMsgId?.messageId === msg._id ? (
-                              <div className="flex flex-col gap-2">
-                                <textarea
-                                  className="w-full p-2 bg-muted text-xs rounded border border-input focus:outline-none"
-                                  value={editMsgText}
-                                  onChange={(e) => setEditMsgText(e.target.value)}
-                                />
-                                <div className="flex gap-2 justify-end">
-                                  <button onClick={() => setEditingMsgId(null)} className="px-3 py-1 text-xs text-muted-foreground border rounded">Cancel</button>
-                                  <button onClick={() => handleEditMessage(id!, msg._id)} className="px-3 py-1 text-xs bg-emerald text-white rounded">Save</button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex justify-between items-start gap-2">
-                                <p className="text-xs flex-1 leading-normal">{msg.text}</p>
-                                <div className="flex gap-1 shrink-0">
-                                  <button
-                                    onClick={() => { setEditingMsgId({ interactionId: id!, messageId: msg._id }); setEditMsgText(msg.text); }}
-                                    className="p-1.5 text-blue-500 bg-blue-500/5 rounded"
-                                  >
-                                    <Edit2 className="w-3 h-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteMessage(id!, msg._id)}
-                                    className="p-1.5 text-destructive bg-destructive/5 rounded"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <button 
+                      onClick={() => setSelectedInteraction(item)}
+                      className="mb-3 w-full flex items-center justify-center gap-2 py-2 bg-rose-50 text-rose-600 rounded-lg border border-rose-100 font-bold text-xs"
+                    >
+                      <Mail className="w-4 h-4" />
+                      View {item.messages.length} Messages
+                    </button>
                   )}
 
                   <div className="grid grid-cols-2 gap-2 text-sm mb-3">
@@ -509,6 +471,147 @@ const AdminDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Message Modal */}
+      {selectedInteraction && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-background w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-border flex flex-col max-h-[90vh]">
+             <div className="p-4 border-b border-border bg-rose-600 text-white flex items-center justify-between">
+                <div>
+                   <h2 className="font-bold font-heading">Messages from {selectedInteraction.visitorName}</h2>
+                   <p className="text-[10px] opacity-80 uppercase tracking-widest">{selectedInteraction.relation}</p>
+                </div>
+                <button 
+                  onClick={() => setSelectedInteraction(null)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+             </div>
+             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-50">
+                {selectedInteraction.messages?.map((msg) => (
+                  <div key={msg._id} className="flex flex-col gap-1 items-start max-w-[85%]">
+                     <div className="bg-white border border-border p-3 rounded-2xl rounded-tl-none shadow-sm relative group w-full">
+                        {editingMsgId?.messageId === msg._id ? (
+                          <div className="space-y-2">
+                             <textarea 
+                              className="w-full text-xs p-2 border rounded bg-slate-50 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                              value={editMsgText}
+                              onChange={(e) => setEditMsgText(e.target.value)}
+                             />
+                             <div className="flex justify-end gap-2">
+                                <button onClick={() => setEditingMsgId(null)} className="text-[10px] font-bold text-muted-foreground px-2 py-1">Cancel</button>
+                                <button onClick={() => handleEditMessage(selectedInteraction._id || selectedInteraction.id!, msg._id)} className="text-[10px] font-bold text-rose-600 px-2 py-1 bg-rose-50 rounded">Save Changes</button>
+                             </div>
+                          </div>
+                        ) : (
+                          <>
+                             <p className="text-sm text-foreground break-words leading-relaxed">{msg.text}</p>
+                             <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
+                                <button 
+                                  onClick={() => { setEditingMsgId({ interactionId: selectedInteraction._id || selectedInteraction.id!, messageId: msg._id }); setEditMsgText(msg.text); }}
+                                  className="p-1.5 text-blue-500 hover:bg-blue-50 text-xs rounded-lg transition-colors border border-blue-100 bg-white"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteMessage(selectedInteraction._id || selectedInteraction.id!, msg._id)}
+                                  className="p-1.5 text-rose-500 hover:bg-rose-50 text-xs rounded-lg transition-colors border border-rose-100 bg-white"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                             </div>
+                          </>
+                        )}
+                     </div>
+                     <span className="text-[10px] text-muted-foreground ml-2">
+                        {new Date(msg.timestamp).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}
+                     </span>
+                  </div>
+                ))}
+             </div>
+             <div className="p-4 bg-white border-t border-border flex justify-end">
+                <button 
+                  onClick={() => setSelectedInteraction(null)}
+                  className="px-6 py-2 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-all text-sm shadow-md"
+                >
+                  Done
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global Inbox Modal */}
+      {isGlobalInboxOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-background w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-border flex flex-col max-h-[90vh]">
+             <div className="p-4 border-b border-border bg-slate-900 text-white flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                   <Inbox className="w-5 h-5 text-rose-400" />
+                   <h2 className="font-bold font-heading">Global Messaging Inbox</h2>
+                </div>
+                <button 
+                  onClick={() => setIsGlobalInboxOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+             </div>
+             <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar bg-slate-50">
+                {data.filter(i => i.messages && i.messages.length > 0).map((interaction) => (
+                  <div key={interaction._id || interaction.id} className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-rose-200 transition-all">
+                     <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                           <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-xs font-bold text-rose-600">
+                              {interaction.visitorName.charAt(0)}
+                           </div>
+                           <div>
+                              <p className="text-sm font-bold text-slate-800">{interaction.visitorName}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{interaction.relation}</p>
+                           </div>
+                        </div>
+                        <button 
+                          onClick={() => { setIsGlobalInboxOpen(false); setSelectedInteraction(interaction); }}
+                          className="text-xs font-bold text-rose-600 hover:underline"
+                        >
+                          Manage All
+                        </button>
+                     </div>
+                     <div className="space-y-2">
+                        {interaction.messages?.slice(-2).map((msg) => (
+                          <div key={msg._id} className="text-xs p-2 bg-slate-50 rounded border border-slate-100 group flex justify-between items-center">
+                             <p className="text-slate-600 line-clamp-1 flex-1">{msg.text}</p>
+                             <span className="text-[9px] text-muted-foreground shrink-0 ml-2">
+                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                             </span>
+                          </div>
+                        ))}
+                        {interaction.messages && interaction.messages.length > 2 && (
+                          <p className="text-[10px] text-center text-muted-foreground italic">
+                            + {interaction.messages.length - 2} more messages
+                          </p>
+                        )}
+                     </div>
+                  </div>
+                ))}
+                {data.filter(i => i.messages && i.messages.length > 0).length === 0 && (
+                   <div className="text-center py-20 text-muted-foreground italic">
+                      Inbox is empty
+                   </div>
+                )}
+             </div>
+             <div className="p-4 bg-white border-t border-border flex justify-end">
+                <button 
+                  onClick={() => setIsGlobalInboxOpen(false)}
+                  className="px-6 py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition-all text-sm"
+                >
+                  Close Inbox
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
