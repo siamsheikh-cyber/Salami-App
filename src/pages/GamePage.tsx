@@ -6,7 +6,7 @@ import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX, Copy } from "lucide-r
 import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds";
 import { saveInteraction, addMessage } from "@/lib/adminService";
 
-type Stage = "loading" | "q1" | "q2" | "salami-choice" | "income-input" | "result";
+type Stage = "loading" | "q1" | "q2" | "salami-choice";
 
 const relationToRole: Record<string, string> = {
   "ভাই": "ছোট ভাই",
@@ -52,6 +52,7 @@ const GamePage = () => {
   const [isSending, setIsSending] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [isFinalSuccess, setIsFinalSuccess] = useState(false);
+  const [isIncomePath, setIsIncomePath] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem("salami_name")) {
@@ -101,34 +102,21 @@ const GamePage = () => {
   }, []);
 
   const handleSalamiChoice = (choice: "income" | "fixed") => {
-    if (choice === "fixed") {
-      playSound("pop");
-      setShowFixedInput(true);
-    } else {
-      playSound("oikire");
-      setStage("income-input");
-    }
-  };
-
-
-
-  const handleIncomeSubmit = () => {
-    const income = parseInt(incomeInput);
-    if (isNaN(income) || income <= 0) return;
-
-    let computedSalami = 0;
-    if (income >= 79999) {
-      computedSalami = 1000;
-    } else {
-      computedSalami = 500;
-    }
-
-    setSalamiAmount(computedSalami);
-    setIncomeInput(computedSalami.toString());
-    setShowFixedInput(true);
-    setStage("salami-choice");
     playSound("pop");
+    if (choice === "income") {
+      setSalamiAmount(500);
+      setIncomeInput("500");
+      setIsIncomePath(true);
+    } else {
+      setIncomeInput("");
+      setIsIncomePath(false);
+    }
+    setShowFixedInput(true);
   };
+
+
+
+
 
   const handleFinalSubmit = async () => {
     const amount = parseInt(incomeInput) || salamiAmount;
@@ -223,8 +211,13 @@ const GamePage = () => {
 
   const handleBack = () => {
     if (stage === "q2") setStage("q1");
-    else if (stage === "salami-choice") setStage("q2");
-    else if (stage === "income-input") setStage("salami-choice");
+    else if (stage === "salami-choice") {
+      if (showFixedInput) {
+        setShowFixedInput(false);
+      } else {
+        setStage("q2");
+      }
+    }
     else navigate("/");
   };
 
@@ -368,9 +361,15 @@ const GamePage = () => {
                           type="number"
                           value={incomeInput}
                           onChange={(e) => setIncomeInput(e.target.value)}
+                          readOnly={isIncomePath}
                           placeholder="যেমন- ৫০০০"
-                          className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base"
+                          className={`w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base ${isIncomePath ? 'bg-muted/50 cursor-not-allowed text-muted-foreground opacity-80' : ''}`}
                         />
+                        {isIncomePath && (
+                          <p className="text-xs text-emerald-600 font-medium mt-1 animate-fade-in">
+                            আপনার জন্য ৫০০ টাকা সালামি নির্ধারণ করা হয়েছে ✨
+                          </p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -470,27 +469,7 @@ const GamePage = () => {
           </div>
         )}
 
-        {stage === "income-input" && (
-          <div className="card-festive p-6 animate-fade-in">
-            <h2 className="text-lg font-bold emerald-text font-heading mb-4">
-              আপনার মাসিক ইনকাম কত? 💰
-            </h2>
-            <input
-              type="number"
-              value={incomeInput}
-              onChange={(e) => setIncomeInput(e.target.value)}
-              placeholder="যেমন- ৮০০০০"
-              className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base mb-4"
-            />
-            <button
-              onClick={handleIncomeSubmit}
-              disabled={!incomeInput || parseInt(incomeInput) <= 0}
-              className="btn-festive w-full text-base py-4 font-heading"
-            >
-              সালামি ক্যালকুলেট করুন 🧮
-            </button>
-          </div>
-        )}
+
 
 
 
