@@ -160,6 +160,34 @@ const GamePage = () => {
     }
   };
 
+  const handlePayment = () => {
+    const amount = parseInt(incomeInput) || salamiAmount;
+    if (isNaN(amount) || amount <= 0) {
+      alert("অনুগ্রহ করে সঠিক টাকার পরিমাণ লিখুন।");
+      return;
+    }
+
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = ua.indexOf("android") > -1;
+    const isIOS = /ipad|iphone|ipod/.test(ua);
+
+    if (isAndroid) {
+      window.location.href = `intent://pay?receiver=${BKASH_NUMBER}&amount=${amount}#Intent;scheme=bkash;package=com.bKash.customerapp;end`;
+    } else if (isIOS) {
+      window.location.href = `bKash://app/transfer?receiver=${BKASH_NUMBER}&amount=${amount}`;
+    } else {
+      alert(`বিকাশ নম্বর: ${BKASH_NUMBER}\nঅনুগ্রহ করে এই নম্বরে ${amount} টাকা সেন্ড মানি করুন।`);
+      return;
+    }
+
+    // Fallback timer
+    setTimeout(() => {
+      if (document.hasFocus()) {
+        alert(`বিকাশ অ্যাপ ওপেন না হলে এই নম্বরে (${BKASH_NUMBER}) সেন্ড মানি করুন।`);
+      }
+    }, 2000);
+  };
+
 
 
   const handleShare = () => {
@@ -337,12 +365,15 @@ const GamePage = () => {
                       </div>
 
                       <div className="pt-2">
-                        <a
-                          href={`bKash://app/transfer?receiver=${BKASH_NUMBER}`}
+                        <button
+                          onClick={handlePayment}
                           className="w-full py-4 rounded-xl bg-[#D12053] text-white hover:bg-[#B01B46] transition-all font-bold font-heading flex items-center justify-center gap-2 shadow-lg scale-100 active:scale-95 transform"
                         >
                           বিকাশ থেকে সালামি পাঠান 💖
-                        </a>
+                        </button>
+                        <p className="text-[10px] text-muted-foreground mt-2 text-center leading-tight">
+                          বিকাশ অ্যাপ ওপেন না হলে এই নম্বরে ({BKASH_NUMBER}) সেন্ড মানি করুন
+                        </p>
                       </div>
 
                       <div className="space-y-2">
