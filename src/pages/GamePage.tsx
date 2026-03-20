@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import crescentDecoration from "@/assets/crescent-decoration.png";
-import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX } from "lucide-react";
+import { Share2, CheckCircle, ArrowLeft, Volume2, VolumeX, Copy } from "lucide-react";
 import { playPop, playCashRegister, playEntryFanfare, playOikire, playAww } from "@/lib/sounds";
 import { saveInteraction, addMessage } from "@/lib/adminService";
 
@@ -172,7 +172,7 @@ const GamePage = () => {
     const isIOS = /ipad|iphone|ipod/.test(ua);
 
     if (isAndroid) {
-      window.location.href = `intent://pay?receiver=${BKASH_NUMBER}&amount=${amount}#Intent;scheme=bkash;package=com.bKash.customerapp;end`;
+      window.location.href = "intent://#Intent;scheme=bkash;package=com.bKash.customerapp;end";
     } else if (isIOS) {
       window.location.href = `bKash://app/transfer?receiver=${BKASH_NUMBER}&amount=${amount}`;
     } else {
@@ -186,6 +186,12 @@ const GamePage = () => {
         alert(`বিকাশ অ্যাপ ওপেন না হলে এই নম্বরে (${BKASH_NUMBER}) সেন্ড মানি করুন।`);
       }
     }, 2000);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(BKASH_NUMBER);
+    playSound("pop");
+    alert("নম্বরটি কপি হয়েছে! ✅");
   };
 
 
@@ -364,16 +370,32 @@ const GamePage = () => {
                         />
                       </div>
 
-                      <div className="pt-2">
+                      <div className="pt-2 space-y-4">
                         <button
                           onClick={handlePayment}
                           className="w-full py-4 rounded-xl bg-[#D12053] text-white hover:bg-[#B01B46] transition-all font-bold font-heading flex items-center justify-center gap-2 shadow-lg scale-100 active:scale-95 transform"
                         >
                           বিকাশ থেকে সালামি পাঠান 💖
                         </button>
-                        <p className="text-[10px] text-muted-foreground mt-2 text-center leading-tight">
-                          বিকাশ অ্যাপ ওপেন না হলে এই নম্বরে ({BKASH_NUMBER}) সেন্ড মানি করুন
-                        </p>
+                        
+                        <div className="space-y-3 pt-2">
+                          <p className="text-sm font-medium text-muted-foreground text-center">
+                            অ্যাপ ওপেন না হলে নিচের নম্বরটি কপি করে সেন্ড মানি করুন
+                          </p>
+                          <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-100 shadow-sm animate-fade-in">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] uppercase tracking-widest text-rose-400 font-bold mb-0.5 whitespace-nowrap">BKASH NUMBER</span>
+                              <span className="text-xl md:text-2xl font-bold text-[#D12053] tracking-wider">{BKASH_NUMBER}</span>
+                            </div>
+                            <button 
+                              onClick={handleCopy}
+                              className="p-3 bg-white text-[#D12053] rounded-xl shadow-sm border border-rose-100 hover:bg-rose-50 transition-all active:scale-90 transform group"
+                              title="Copy Number"
+                            >
+                              <Copy className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
