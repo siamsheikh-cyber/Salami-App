@@ -20,6 +20,9 @@ const relationToRole: Record<string, string> = {
   "বন্ধু": "বন্ধু",
 };
 
+const BKASH_NUMBER = "01339539820";
+
+
 const GamePage = () => {
   const navigate = useNavigate();
   const name = localStorage.getItem("salami_name") || "অতিথি";
@@ -45,8 +48,10 @@ const GamePage = () => {
   const [showFixedInput, setShowFixedInput] = useState(false);
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
+  const [trxId, setTrxId] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [isFinalSuccess, setIsFinalSuccess] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem("salami_name")) {
@@ -105,75 +110,57 @@ const GamePage = () => {
     }
   };
 
-  const handleFixedInputSubmit = () => {
-    const fixedAmount = parseInt(incomeInput);
-    if (isNaN(fixedAmount) || fixedAmount <= 0) return;
 
-    setSalamiAmount(fixedAmount);
-    setStage("result");
-    setTimeout(fireConfetti, 300);
-    playSound("cash");
-
-    saveInteraction({
-      visitorName: name,
-      relation: relation,
-      q1Option,
-      q2Option,
-      incomeOption: "fixed",
-      incomeAmount: fixedAmount,
-      finalSalami: fixedAmount
-    }).then(res => {
-      if (res && res._id) setSubmissionId(res._id);
-    });
-  };
 
   const handleIncomeSubmit = () => {
     const income = parseInt(incomeInput);
     if (isNaN(income) || income <= 0) return;
 
     let computedSalami = 0;
-
     if (income >= 79999) {
-      setSalamiAmount(1000);
       computedSalami = 1000;
     } else {
-      setSalamiAmount(500);
       computedSalami = 500;
     }
 
-    setStage("result");
-    setTimeout(fireConfetti, 300);
-    playSound("cash");
-
-    saveInteraction({
-      visitorName: name,
-      relation: relation,
-      q1Option,
-      q2Option,
-      incomeOption: "income",
-      incomeAmount: income,
-      finalSalami: computedSalami
-    }).then(res => {
-      if (res && res._id) setSubmissionId(res._id);
-    });
+    setSalamiAmount(computedSalami);
+    setIncomeInput(computedSalami.toString());
+    setShowFixedInput(true);
+    playSound("pop");
   };
 
-  const handleMessageSubmit = async () => {
-    if (!submissionId || !messageText.trim() || isSending) return;
+  const handleFinalSubmit = async () => {
+    const amount = parseInt(incomeInput) || salamiAmount;
+    if (isNaN(amount) || amount <= 0) return;
 
     setIsSending(true);
     try {
-      await addMessage(submissionId, messageText.trim());
-      setMessageText("");
-      setShowSuccessToast(true);
-      setTimeout(() => setShowSuccessToast(false), 5000);
-      playSound("pop");
+      const res = await saveInteraction({
+        visitorName: name,
+        relation: relation,
+        q1Option,
+        q2Option,
+        incomeOption: showFixedInput ? "fixed" : "income",
+        incomeAmount: amount,
+        finalSalami: amount,
+        trxId: trxId.trim(),
+        messages: messageText.trim() ? [{ text: messageText.trim() }] : []
+      });
+
+      if (res && res._id) {
+        setSubmissionId(res._id);
+        setIsFinalSuccess(true);
+        fireConfetti();
+        playSound("cash");
+      }
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error saving interaction:", error);
     } finally {
       setIsSending(false);
     }
   };
+
+
 
   const handleShare = () => {
     const text = `🌙 ঈদ মোবারক! সালামি সিস্টেমে আপনার সালামি পেন্ডিং আছে! 😄\n\n👉 ${window.location.origin}`;
@@ -185,10 +172,7 @@ const GamePage = () => {
     }
   };
 
-  const handleConfirm = () => {
-    setConfirmed(true);
-    fireConfetti();
-  };
+
 
   const handleBack = () => {
     if (stage === "q2") setStage("q1");
@@ -311,7 +295,6 @@ const GamePage = () => {
 
         {stage === "salami-choice" && (
           <div className="card-festive p-6 animate-fade-in">
-
             <div className="space-y-4">
               {!showFixedInput ? (
                 <>
@@ -329,30 +312,92 @@ const GamePage = () => {
                   </button>
                 </>
               ) : (
-                <div className="animate-fade-in space-y-4">
-                  <h3 className="text-base font-medium text-foreground">সালামি কত টাকা দিতে চাচ্ছেন? 💰</h3>
-                  <input
-                    type="number"
-                    value={incomeInput}
-                    onChange={(e) => setIncomeInput(e.target.value)}
-                    placeholder="যেমন- ৫০০০"
-                    className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => { setShowFixedInput(false); setIncomeInput(""); }}
-                      className="w-1/3 px-4 py-3 rounded-xl border border-input bg-background text-foreground hover:bg-muted transition-all font-medium text-sm"
-                    >
-                      বাতিল
-                    </button>
-                    <button
-                      onClick={handleFixedInputSubmit}
-                      disabled={!incomeInput || parseInt(incomeInput) <= 0}
-                      className="btn-festive w-2/3 text-base py-3 font-heading"
-                    >
-                      নিশ্চিত করুন ✅
-                    </button>
-                  </div>
+                <div className="space-y-5">
+                  {!isFinalSuccess ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <h3 className="text-base font-medium text-foreground">সালামি কত টাকা দিতে চাচ্ছেন?</h3>
+                        <input
+                          type="number"
+                          value={incomeInput}
+                          onChange={(e) => setIncomeInput(e.target.value)}
+                          placeholder="যেমন- ৫০০০"
+                          className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all text-base"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <h3 className="text-base font-medium text-foreground">মেসেজ (ঐচ্ছিক)</h3>
+                        <textarea
+                          value={messageText}
+                          onChange={(e) => setMessageText(e.target.value)}
+                          placeholder="মেসেজ দিন..."
+                          className="w-full px-4 py-3 rounded-xl border border-emerald/20 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald/50 transition-all text-sm min-h-[80px] resize-none festive-textarea"
+                        />
+                      </div>
+
+                      <div className="pt-2">
+                        <a
+                          href={`bKash://app/transfer?receiver=${BKASH_NUMBER}`}
+                          className="w-full py-4 rounded-xl bg-[#D12053] text-white hover:bg-[#B01B46] transition-all font-bold font-heading flex items-center justify-center gap-2 shadow-lg scale-100 active:scale-95 transform"
+                        >
+                          বিকাশ থেকে সালামি পাঠান 💖
+                        </a>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-muted-foreground">Transaction ID (ঐচ্ছিক)</h3>
+                        <input
+                          type="text"
+                          value={trxId}
+                          onChange={(e) => setTrxId(e.target.value)}
+                          placeholder="যেমন- BK123456"
+                          className="w-full px-4 py-2 rounded-lg border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring transition-all text-sm"
+                        />
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => { setShowFixedInput(false); setIncomeInput(""); }}
+                          className="w-1/4 px-4 py-3 rounded-xl border border-input bg-background text-foreground hover:bg-muted transition-all font-medium text-sm"
+                        >
+                          বাতিল
+                        </button>
+                        <button
+                          onClick={handleFinalSubmit}
+                          disabled={!incomeInput || parseInt(incomeInput) <= 0 || isSending}
+                          className="btn-festive flex-1 text-base py-3 font-heading"
+                        >
+                          {isSending ? "জমা হচ্ছে..." : "আমি সালামি পাঠিয়েছি ✅"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 animate-scale-in">
+                      <CheckCircle className="w-16 h-16 mx-auto mb-4 text-emerald" />
+                      <h2 className="text-2xl font-bold emerald-text font-heading mb-2">
+                        ধন্যবাদ {addressee} 😎
+                      </h2>
+                      <p className="text-muted-foreground">
+                        আপনার সালামি এবং মেসেজ সফলভাবে রেকর্ড করা হয়েছে।
+                      </p>
+                      <div className="flex flex-col gap-3 mt-6">
+                        <button
+                          onClick={handleShare}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-input bg-background text-foreground hover:bg-muted transition-all font-medium"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          অন্যদের সাথে শেয়ার করুন
+                        </button>
+                        <button
+                          onClick={() => navigate("/")}
+                          className="w-full py-3 rounded-xl bg-muted text-muted-foreground hover:bg-muted/80 transition-all font-medium"
+                        >
+                          মূল পাতায় ফিরে যান
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -383,81 +428,7 @@ const GamePage = () => {
 
 
 
-        {stage === "result" && (
-          <div className="space-y-5 animate-fade-in">
-            <div className="card-festive p-6 text-center">
-              <h2 className="text-xl md:text-2xl font-bold gold-text font-heading mb-3">
-                🎉 অভিনন্দন! সালামি ক্যালকুলেশন সম্পন্ন!
-              </h2>
-              <p className="text-foreground leading-relaxed mb-3">
-                {addressee}, আপনার জন্য সালামি <span className="font-bold text-accent text-xl">{salamiAmount} টাকা</span> নির্ধারিত হয়েছে 😎
-              </p>
-              <p className="text-foreground leading-relaxed">
-                আপনার সালামি এখনো <span className="font-bold text-destructive">পেন্ডিংয়ে</span> আছে।
-                আপনার {role}-এর পকেটটা কিন্তু এখনো খালি পড়ে আছে!
-                ঈদের আনন্দে শামিল হতে অতি দ্রুত নিচের নম্বরে সালামি পাঠিয়ে দিন। 💸
-              </p>
-            </div>
 
-            <div className="card-festive p-6 text-center animate-pulse-glow">
-              <p className="text-sm text-muted-foreground mb-1">বিকাশ (Personal)</p>
-              <p className="text-2xl md:text-3xl font-bold emerald-text font-heading tracking-wider">
-                01339539820
-              </p>
-              <div className="mt-4 inline-block bg-muted rounded-xl p-3">
-                <p className="text-xs text-muted-foreground">📱 বিকাশ অ্যাপে Send Money করুন</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="pt-4 border-t border-border/50">
-                <label className="block text-sm font-bold emerald-text mb-2 text-center font-heading">
-                  এখান থেকে মেসেজ পাঠান
-                </label>
-                <div className="space-y-3">
-                  <textarea
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder="আপনার মেসেজ এখানে লিখুন..."
-                    className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald/50 transition-all text-sm min-h-[100px] resize-none"
-                  />
-                  <button
-                    onClick={handleMessageSubmit}
-                    disabled={!messageText.trim() || isSending || !submissionId}
-                    className="w-full py-3 rounded-xl bg-emerald text-white hover:bg-emerald/90 transition-all font-bold font-heading flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSending ? "জমা হচ্ছে..." : "মেসেজ জমা দিন 🚀"}
-                  </button>
-                </div>
-              </div>
-              {!confirmed ? (
-                <button onClick={handleConfirm} className="btn-festive w-full text-base py-4 font-heading">
-                  আমি সালামি পাঠিয়েছি ✅
-                </button>
-              ) : (
-                <div className="card-festive p-6 text-center animate-fade-in">
-                  <CheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald" />
-                  <p className="text-lg font-bold emerald-text font-heading">
-                    ধন্যবাদ {addressee} 😎
-                  </p>
-                  <p className="text-muted-foreground mt-1">
-                    আপনার সালামি সিস্টেমে রেকর্ড করা হয়েছে।
-                  </p>
-                </div>
-              )}
-
-              <button
-                onClick={handleShare}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-input bg-background text-foreground hover:bg-muted transition-all font-medium"
-              >
-                <Share2 className="w-4 h-4" />
-                অন্যদের সাথে শেয়ার করুন
-              </button>
-
-
-            </div>
-          </div>
-        )}
       </div>
 
       <p className="text-xs text-muted-foreground mt-8 text-center">

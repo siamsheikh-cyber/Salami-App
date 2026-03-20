@@ -1,18 +1,6 @@
-export interface SalamiInteraction {
-  _id?: string;
-  id?: string;
-  visitorName: string;
-  relation: string;
-  q1Option: string;
-  q2Option: string;
-  incomeOption: "income" | "fixed" | "";
-  incomeAmount: number | null;
-  finalSalami: number;
-  timestamp?: string;
-  status?: "Progress" | "Cancel" | "Done";
-  isPublic?: boolean;
-  messages?: { _id: string; text: string; timestamp: string }[];
-}
+import { SalamiInteraction } from "./types";
+export type { SalamiInteraction };
+
 
 // Automatically use localhost for development and relative path for Vercel production.
 // This prevents CORS issues and the unexpected HTML token error.

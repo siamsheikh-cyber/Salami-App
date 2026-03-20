@@ -46,6 +46,7 @@ const interactionSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now },
     status: { type: String, default: 'Progress', enum: ['Progress', 'Cancel', 'Done'] },
     isPublic: { type: Boolean, default: true },
+    trxId: { type: String, default: "" },
     messages: [{
         text: { type: String, required: true },
         timestamp: { type: Date, default: Date.now }
