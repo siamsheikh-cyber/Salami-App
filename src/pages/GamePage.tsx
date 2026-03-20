@@ -126,6 +126,7 @@ const GamePage = () => {
     setSalamiAmount(computedSalami);
     setIncomeInput(computedSalami.toString());
     setShowFixedInput(true);
+    setStage("salami-choice");
     playSound("pop");
   };
 
@@ -135,6 +136,18 @@ const GamePage = () => {
 
     setIsSending(true);
     try {
+      const finalTrxId = trxId.trim();
+      const finalMessageText = messageText.trim();
+      let combinedMessage = "";
+
+      if (finalTrxId && finalMessageText) {
+        combinedMessage = `TrxID: ${finalTrxId} | Message: ${finalMessageText}`;
+      } else if (finalTrxId) {
+        combinedMessage = `TrxID: ${finalTrxId}`;
+      } else if (finalMessageText) {
+        combinedMessage = finalMessageText;
+      }
+
       const res = await saveInteraction({
         visitorName: name,
         relation: relation,
@@ -143,8 +156,8 @@ const GamePage = () => {
         incomeOption: showFixedInput ? "fixed" : "income",
         incomeAmount: amount,
         finalSalami: amount,
-        trxId: trxId.trim(),
-        messages: messageText.trim() ? [{ text: messageText.trim() }] : []
+        trxId: finalTrxId,
+        messages: combinedMessage ? [{ text: combinedMessage }] : []
       });
 
       if (res && res._id) {
@@ -377,17 +390,17 @@ const GamePage = () => {
                         >
                           বিকাশ থেকে সালামি পাঠান 💖
                         </button>
-                        
+
                         <div className="space-y-3 pt-2">
                           <p className="text-sm font-medium text-muted-foreground text-center">
-                            অ্যাপ ওপেন না হলে নিচের নম্বরটি কপি করে সেন্ড মানি করুন
+                            বিকাশ পার্সোনাল, নম্বরটি এখান থেকে কপি করে সেন্ড মানি করুন।
                           </p>
                           <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-100 shadow-sm animate-fade-in">
                             <div className="flex flex-col">
                               <span className="text-[10px] uppercase tracking-widest text-rose-400 font-bold mb-0.5 whitespace-nowrap">BKASH NUMBER</span>
                               <span className="text-xl md:text-2xl font-bold text-[#D12053] tracking-wider">{BKASH_NUMBER}</span>
                             </div>
-                            <button 
+                            <button
                               onClick={handleCopy}
                               className="p-3 bg-white text-[#D12053] rounded-xl shadow-sm border border-rose-100 hover:bg-rose-50 transition-all active:scale-90 transform group"
                               title="Copy Number"
@@ -399,7 +412,7 @@ const GamePage = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">Transaction ID (ঐচ্ছিক)</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground">Transaction ID</h3>
                         <input
                           type="text"
                           value={trxId}
